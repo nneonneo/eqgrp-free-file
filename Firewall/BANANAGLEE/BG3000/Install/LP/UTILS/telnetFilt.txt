@@ -1,0 +1,2 @@
+filter:ip proto \tcp and port 23
+netmask:255.0.0.0

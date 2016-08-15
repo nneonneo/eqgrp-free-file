@@ -1,0 +1,82 @@
+This document describes how to make filters and extraction 
+files for the Profiler module. 
+
+The Profiler module uses 2 different files for the purposes of 
+collection: filters and extracts. 
+
+The Filter files describe the type of traffic to collect while 
+the extraction files describe the bytes of interest in the packet. 
+For example, you could write a filter to catch TCP/IP traffic and 
+then write an extract to extract the 4 bytes after the IP header. 
+This would give you the source and destination ports for the TCP 
+stream. 
+
+To create filters, it is helpful, but not necessary to be familiar 
+with tcpdump or ethereal. Both of these programs use the same Berkeley 
+Packet Filter (BPF) style of describing traffic that the Profiler 
+modules expects. Basically, BPF is a way of describing traffic that 
+is easily readable. For example, to write a filter that describes 
+TCP/IP traffic, you would have: 
+
+ip proto \tcp 
+
+This states that you want IP packets that have TCP payloads
+
+For a filter that matches HTTP: 
+
+ip proto \tcp and port 80 
+
+Again, IP packets, protocol TCP and the port (either source or 
+destination) is 80. 
+
+Since text is good for people, but not so fast for computers, 
+the Profiler module expects compiled BPF filters. Profiler also 
+limits what it collects to a certain network address range based 
+on netmask. So to turn the above HTTP filter into something usable 
+by the Profiler module, you need the following in a text file: 
+
+
+filter:ip proto \tcp and port 80 
+netmask:255.255.0.0 
+
+This specifies the same filter constraints and says to match IPs 
+for a class B network (same as the interface network). If you save 
+the above in a file named "httpFilt.txt", then to compile it for 
+the Profiler you would do the following: 
+
+./bpfcompiler -i httpFilt.txt -o httpFilt.bin 
+
+The -i option specifies the input file containing the filter and the 
+-o option specifies the output file that the compiled filter is 
+written into. 
+
+To make an extraction, you must specify the number of bytes 
+to extract. You also need to specify the offset into the packet 
+(from the start of the IP header) to where the data you want to 
+extract is. So, an extraction file to get the TCP ports from a 
+packet would look like: 
+
+4 20 
+
+This says to extract 4 bytes at offset 20 (so skip over the 
+20 bytes of IP header). This is compiled in similar fashion to 
+the filters: 
+
+./xtrctcomp tcpPort-extr.txt tcpPort-extr.bin 
+
+The commandline above will take the text file containing the 
+extraction rule and compile it and write out the binary as 
+tcpPort-extr.bin. 
+
+Once you have a binary filter and a binary extraction you can 
+upload them to the Profiler module. 
+
+
+###### Decrypting the profiler collection #######
+
+Once you collect the profiler data from target you can convert it to a pcap file using
+the script xtractpleasing located in the FW/Tools directory.  
+
+Sample:
+./xtractpleasing --i <collected profile> --o <output file> --s <number of bytes skipped> --t <Number of bytes collected> --p <optional flag to specify TCP, UDP, or ICMP>  
+

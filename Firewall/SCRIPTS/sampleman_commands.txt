@@ -1,0 +1,207 @@
+# Script your window!
+myenv
+
+#### Pix commands
+
+sho clock
+sho logging
+who 
+sho pdm ses
+sho ssh ses
+sho pdm logg
+
+# pix 7.x check for asdm connection
+
+sho asdm ses
+sho asdm logg
+
+
+# If you see logging at Informational or Debugging, it logs everything you
+# type. Also, "who" will show you who is logged on via telnet or ssh, not
+# console or by Morel.  If you see someone else, bail!
+
+# set the pager so it will print everything w/o requiring you to hit spacebar to continue
+###### This will log at Informational level #######
+# Pix 6.X
+pager lines 0
+# Pix 7.X --- The below line will not modify the config but will get logged at level 5 (notifications)
+terminal pager lines 0
+
+sho arp
+sho ip add
+sho tech
+sho cloc
+sho flas
+sho mem
+sho ver
+
+exit
+
+
+
+
+
+# Finally go to the logging host and clean the logs if you have to
+
+
+#### Juniper
+
+set cli screen-length 0
+show system users
+show system uptime
+show configuration
+show system software detail
+show chassis routing-engine
+show log messages
+show interfaces terse
+show arp no-resolve
+show route brief
+show route summary
+show route
+show route 66.249.85.99
+show chassis ssb
+show chassis fpc
+show chassis routing-engine
+show isis database
+show chassis environment
+monitor traffic brief no-resolve count 10
+monitor traffic interface fxp0 no-resolve extensive size 1500
+show bgp neighbor
+show isis database brief
+show mpls lsp terse
+show interface tap
+
+show log
+
+exit
+
+
+#### Netscreen
+
+get clock
+get user all
+get admin user
+get log setting
+get config
+get session
+get admin
+get system
+get interface
+get arp
+get sa
+get ike cookie
+get vpn
+exit
+
+get console
+get session dst-ip <IP of firewall> dst-port 80
+get session dst-ip <IP of firewall> dst-port 443
+
+#### Cisco Router
+
+
+sho mem  (don't run on a router)
+sho clock
+term length 0
+sho user
+
+en
+
+sho vers
+sho arp
+sho proc cpu
+sho cdp neigh detail
+sho flash
+sh logging
+sh ip int brief
+sh snmp
+sh ip bgp sum
+sh ip bgp nei
+sh ip route sum
+
+sh vlan
+sh mac
+sh int
+sh inventory
+sho rom-monitor
+sh diag
+sho run
+sho start
+sh flash all
+dir
+
+## Only run the following if you see these services running from the output of
+"sh run".
+!#sh ip cef det
+!#sh mpls forwarding-table
+!#sh mpls forwarding-table det
+!#sh mpls ldp bindings
+!#sh mpls ldp discovery
+!#sh ip vrf det
+
+sh clock
+
+sh dial-peer voice
+sho voi port
+sh call history voice
+sh call resource voice stats
+sh pots stats
+sh call active voice brief
+
+exit
+
+!##############
+!# other useful commands
+
+!# sh ?
+
+!# sh int
+
+!# sh vlan
+sh mac
+!# sh flash detail
+!# sh flash
+
+!# logo
+!#################
+
+
+## Huawei
+!!! WARNING: All commands are logged !!!
+!!! If you see "info-center loghost X.X.X.X" 
+!!! during a sampleman, DO NOT IMPLANT !!!
+!!! Unless we own the syslog server !!!
+
+display clock
+display local-user
+display users all
+display info-center
+display current
+display version
+display ftp-server
+display snmp trap
+display time-range all
+dir
+display arp
+display ip routing-table
+display aaa configuration
+display tcp statistics
+display tcp status
+display diagnostic-information
+display interface ethernet
+display patch all
+
+IPv6 commands (VRP 5.x OS version):
+display ipv6 interface brief
+display ipv6 interface
+display ipv6 routing-table stat
+display ipv6 routing-table
+display ospfv3
+
+
+### The following will check the hidden log
+### Do from su 3
+system
+_hide
+_display history all
+

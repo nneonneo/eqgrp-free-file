@@ -1,0 +1,32 @@
+Fix Procedure
+
+3. Copy the 5 files associated with that serial number to the LP directory.
+
+mkdir /current/fix
+cp <location>/FairVaultFixOp.tgz /current/fix
+cd /current/fix; tar xvjf FairVaultFixOp.tgz
+
+# All the needed files will be in /current/fix/FairVault
+
+4. Connect to the implant with BananaLiar
+5. Load and activate the BananaBallot Bios Module (biosModule_AM29LV040 in the menu)
+6. Enter the Bios Module menu
+7. Read 81920 bytes from address 9006c000. A file of that size should be
+created in a subdirectory named with the target IP address (probably the
+loopback address). Perform a sha1sum on that file and compare it with the
+sha1sum of the badua_XXX.bin file. They should match
+8. Write the uaXXX_9006c000.bin file to address 9006c000
+9. Read back 81920 bytes from address 9006c000. Compare the sha1sum of the
+file you wrote to the one you read back to ensure the write worked properly.
+If they don't match repeat steps 8+9.
+
+10. All done. Cleanup as appropriate. The values you wrote wont take effect
+until the next reboot, but no beaconing will occur till then in any case.
+
+Make sure to only use Hex values for read sizes, not decimel
+
+Alternative to steps 7-9. If reading/writing an 82K file is a problem because
+of network bandwidth constraints, you can instead read/write the two smaller files. 
+Just as with the larger file, read again after writing to confirm the expected
+data was written. The file's names contain the addresses they should be
+written to.

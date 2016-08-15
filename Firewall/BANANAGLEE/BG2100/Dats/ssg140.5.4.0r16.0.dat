@@ -1,0 +1,76 @@
+;
+;
+;
+;
+0x25180911                  
+0xffffffff                  
+0x0     0x00311C60          
+0x1     0x00311360          
+0x3     0x0030BE80          
+0x6     0x00C3C660          
+0x7     0x00C3C8E0          
+0x8     0x0009B200          
+0x9     0x0009BAA0          
+0xa     0x00C3DE80          
+0xf     0x00B13CE0          
+0x15    0x00088CC0          
+0x17    0x00089000          
+0x19    0x00095030          
+0x20    0x00710AC0          
+0x21    0x00094360          
+0x22    0x01A236DC          
+0x24    0x000935B8          
+0x27    0x01700A04          
+0x28    0x0181D45C          
+0x29    0x0089EC94          
+0x2f    0x01DB8540          
+;
+0x30    0x00000018          
+0x31    0x00000034          
+0x32    0x00000094          
+0x33    0x00000000          
+0x34    0x00000070          
+0x35    0x01A0510C          
+0x3b    0x000AC9E0          
+0x3c    0x000ACD80          
+0x3d    0x000AC500          
+0x3e    0x000AD080          
+0x3f    0x008A1E80          
+;
+;
+;
+:EOS:
+;
+;
+;
+ArpTableAddrPtr      0x01DCC0C0             
+ConfigAddr           0x01DD1340             
+PingPtr              0x01724FA0             
+SafeSpace            0x01700000             
+ImgCkSum             0xE52A8911             
+CodeCkSum            0x1C830201             
+SystemCkSum          0x125FC120             
+TimeTablePtr         0x01E01FD0             
+LogTablePtr          0x01DD3DE0             
+LogOptsPtr           0x01DD4270             
+;
+CritTablePtr         0x01DD4260             
+MixedConfig          0x00649880             
+;
+Printf               0x00C3DE80             
+Socket               0x00319380             
+Bind                 0x00319FC0             
+Connect              0x0031D240             
+Send                 0x0031DD20             
+Recv                 0x0031DFC0             
+Close                0x0031E4A0             
+Malloc               0x0009B200             
+Free                 0x0009BAA0             
+Resched              0x00092A80             
+SyscallTable         0x01700A04             
+
+;
+;
+:EOS
+;
+

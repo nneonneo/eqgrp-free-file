@@ -1,0 +1,60 @@
+===========================================================================================================================
+===========================================  CISCO SNMP START ==============================================================
+============================================================================================================================
+
+: syntax on
+
+mx
+:%s/\$TARGET/TARGET/g
+:%s/\$COMMPUBLIC/COMMPUBLIC/g			
+`x
+
+# !!!!! Full SNMP Bulkwalk can be large !!!!!
+
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET
+
+# RFC1213 MIBs ##################################################
+#
+# System 1.3.1.6.1.2.1.1
+
+
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET 1.3.6.1.2.1.1 
+or
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET SNMPv2-MIB::system
+or
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET SNMPv2-MIB::system.sysDescr		#System Description
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET SNMPv2-MIB::system.sysUpTime		# Uptime
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET SNMPv2-MIB::system.sysContact		
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET SNMPv2-MIB::system.sysName		#Device Name
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET SNMPv2-MIB::system.sysLocation
+
+
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET SNMPv2-SMI::mib-2.47.1.1.1.1.2.1 	#Model Description
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET SNMPv2-SMI::mib-2.47.1.1.1.1.9.1 	#FW Version Ex. "1.0(11)5"
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET SNMPv2-SMI::mib-2.47.1.1.1.1.10.1 	#Software version Ex. "8.2(2)"
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET SNMPv2-SMI::mib-2.47.1.1.1.1.11.1 	#Serial Number Ex."JMX1531L19Q"
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET SNMPv2-SMI::mib-2.47.1.1.1.1.12.1 	#Vendor Ex. "cisco Systems Inc."
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET SNMPv2-SMI::mib-2.47.1.1.1.1.13.1 	#Model Less Descriptive Ex. "ASA5510"
+
+
+# Interface Configuration 1.3.6.1.2.1.2
+
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET 1.3.6.1.2.1.2
+or
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET IF-MIB::ifNumber			#Number of Interfaces
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET IF-MIB::ifDescr			#Interface Descriptions
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET IF-MIB::ifName				#Name of each interface
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET IF-MIB::ifType				#Interface Type
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET IF-MIB::ifMtu				#Interface Configured MTU
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET IF-MIB::ifAdminStatus			#Administratively up or down
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET IF-MIB::ifOperStatus			#Link up or down
+
+
+# IP Addresses 1.3.6.1.2.1.4
+
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET 1.3.6.1.2.1.4
+or
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET IP-MIB::ipAdEntAddr			#IP address assigned to each interface
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET IP-MIB::ipAdEntIfIndex			#Index matching interfaces configured
+snmpbulkwalk -v2c -c $COMMPUBLIC $TARGET IP-MIB::ipAdEntNetMask			#Subnet mask for configured address 
+

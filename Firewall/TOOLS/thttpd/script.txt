@@ -1,0 +1,18 @@
+### Normal usage
+
+# Put the files to be up/downloaded into the httptmp directory.
+cp /mnt/zip/<file>.bin /current/bin/FW/Tools/thttpd/httptmp/
+
+# Remove the execute bit, else the http server thinks it's a broken cgi script.
+chmod -x /current/bin/FW/Tools/thttpd/httptmp/*
+
+# Start the server
+
+/current/bin/FW/Tools/thttpd/thttpd -p 8000 -d /current/bin/FW/Tools/thttpd/httptmp -l /current/bin/FW/Tools/thttpd/http.log
+
+# Do your work in scripted windows.....
+
+# When done, stop the server
+killall thttpd
+
+

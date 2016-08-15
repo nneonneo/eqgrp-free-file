@@ -1,0 +1,217 @@
+#!/usr/bin/perl
+use Getopt::Long;
+
+my $opt_clr_tunnel_ip              = undef;
+my $opt_enc_tunnel_ip              = undef;
+my $opt_enc_redir_ip               = undef;
+my $opt_clr_redir_ip               = undef;
+my $opt_target_ip                  = undef;
+my $opt_enc_tunnel_pt              = undef;
+my $opt_enc_redir_pt               = undef;
+my $opt_enc_key                    = undef;
+my $opt_redir_to_target_dest_pt    = undef;
+my $opt_redir_to_target_src_pt     = undef;
+my $opt_tunnel_to_attacker_dest_pt = undef;
+my $opt_tunnel_to_attacker_src_pt  = undef;
+my $opt_proto                      = undef;
+my $opt_orig_src_ip                = undef;
+my $opt_local_ip                   = undef;
+my $opt_logdir                     = undef;
+my $opt_help                       = undef;
+
+sub usage {
+
+    print "\n";
+    print
+"bg_redirect.pl-3110 inserts local iptables rules to forward traffic to a user process\n";
+    print
+      "  and instantiates this user process (bg_redirector-3110), which is\n";
+    print "  a local encryptor/decryptor/redirector.\n\n";
+
+    print
+"Usage: bg_redirect.pl-3110 --clr_tunnel_ip <ip> --enc_tunnel_ip <ip> --enc_redir_ip <ip>\n";
+    print
+"       --target_ip <ip> --orig_src_ip <ip> --local_ip --enc_tunnel_pt <port> \n";
+    print
+"       --enc_redir_pt <port> --clr_redir_ip <ip> --enc_key <encryption key file> \n";
+    print "       [--proto <protocol>] [--redir_to_target_dest_pt <port>]\n";
+    print
+"       [--redir_to_target_src_pt <port>] [--tunnel_to_attacker_dest_pt <port>]\n";
+    print
+"       [--tunnel_to_attacker_src_pt <port>] [--restart] [--logdir <logdir>]\n";
+    print "       [--help]\n\n";
+
+    if ( defined($opt_help) ) {
+        extended_usage();
+    }
+}
+
+sub extended_usage {
+    print "   --clr_tunnel_ip <ip>\n";
+    print
+"       IP address that packets will be sent to for encryption and redirection\n\n";
+    print "   --enc_tunnel_ip <ip>\n";
+    print
+"       Source IP address of encrypted packets when they reach the redirector\n\n";
+    print "   --enc_redir_ip <ip>\n";
+    print
+      "       IP address of the encrypted interface on the redirector box\n\n";
+    print "   --clr_redir_ip <ip>\n";
+    print "       IP address of the clear interface on the redirector box\n\n";
+    print "   --target_ip <ip>\n";
+    print "       IP address of the target box\n\n";
+    print "   --orig_src_ip <op>\n";
+    print
+"       Original source address of the unencrypted attacker packet when\n";
+    print "       it is generated\n\n";
+    print "   --target_ip <ip>\n";
+    print "       IP address of this machine\n\n";
+    print "   --enc_tunnel_pt <port>\n";
+    print "       Local port used to send and recieve encrypted packets\n\n";
+    print "   --enc_redir_pt <port>\n";
+    print "       Remote port used to send and recieve encrypted packets\n\n";
+    print "   --enc_key <encryption key file>\n";
+    print
+"       File containing the encryption key to be used (if file does not exist,\n";
+    print "       it will be created and a key will be generated\n\n";
+    print "  [--proto <protocol>]\n";
+    print
+"       (Optional) Protocol to encrypt and redirect. If no protocol is specified\n";
+    print
+"       all protocols will be ecnrypted and redirected.  Specified protocol must\n";
+    print "       be recognizable to a Berkley Packet Filter parser\n\n";
+    print "  [--redir_to_target_dest_pt <port>]\n";
+    print
+"       (Optional) Destination port of packets sent from the clear interface on\n";
+    print "        the redirector to the target box\n\n";
+    print "  [--redir_to_target_src_pt <port>]\n";
+    print
+"       (Optional) Source port of packets sent from the clear interface on\n";
+    print "        the redirector to the target box\n\n";
+    print "  [--tunnel_to_attacker_dest_pt <port>]\n";
+    print
+"       (Optional) Destination port of packets sent from the local listener to\n";
+    print "       attacker\n\n";
+    print "  [--tunnel_to_attacker_src_pt <port>]\n";
+    print
+"       (Optional) Source port of packets sent from the local listener to\n";
+    print "       attacker\n\n";
+    print "  [--logdir <logdir>]\n";
+    print "       (Optional) directory to save logs to (defaults to .)\n";
+
+}
+
+GetOptions(
+    "clr_tunnel_ip=s"              => \$opt_clr_tunnel_ip,
+    "enc_tunnel_ip=s"              => \$opt_enc_tunnel_ip,
+    "enc_redir_ip=s"               => \$opt_enc_redir_ip,
+    "clr_redir_ip=s"               => \$opt_clr_redir_ip,
+    "target_ip=s"                  => \$opt_target_ip,
+    "enc_tunnel_pt=s"              => \$opt_enc_tunnel_pt,
+    "enc_redir_pt=s"               => \$opt_enc_redir_pt,
+    "enc_key=s"                    => \$opt_enc_key,
+    "redir_to_target_dest_pt=s"    => \$opt_redir_to_target_dest_pt,
+    "redir_to_target_src_pt=s"     => \$opt_redir_to_target_src_pt,
+    "tunnel_to_attacker_dest_pt=s" => \$opt_tunnel_to_attacker_dest_pt,
+    "tunnel_to_attacker_src_pt=s"  => \$opt_tunnel_to_attacker_src_pt,
+    "proto=s"                      => \$opt_proto,
+    "orig_src_ip=s"                => \$opt_orig_src_ip,
+    "local_ip=s"                   => \$opt_local_ip,
+    "logdir=s"                     => \$opt_logdir,
+    "help"                         => \$opt_help
+);
+
+if ( defined($opt_help) ) {
+    usage();
+    die;
+}
+
+if (   !defined($opt_clr_tunnel_ip)
+    || !defined($opt_enc_tunnel_ip)
+    || !defined($opt_enc_redir_ip)
+    || !defined($opt_clr_redir_ip)
+    || !defined($opt_target_ip)
+    || !defined($opt_enc_tunnel_pt)
+    || !defined($opt_enc_redir_pt)
+    || !defined($opt_enc_key)
+    || !defined($opt_local_ip) )
+{
+    usage();
+    die;
+}
+
+if ( !defined($opt_proto) ) { $opt_proto = "all"; }
+
+if ( system("/sbin/modprobe ip_tables") != 0 ) {
+    print "/sbin/modprobe ip_tables failed.";
+    die;
+}
+
+if ( system("/sbin/modprobe ip_queue") != 0 ) {
+    print "/sbin/modprobe ip_queue failed.";
+    die;
+}
+
+my $iptables_output_insert = "/sbin/iptables -I OUTPUT 1 ";
+$iptables_output_insert .= "-s $opt_orig_src_ip -d ";
+$iptables_output_insert .= "$opt_clr_tunnel_ip -p $opt_proto -j QUEUE";
+
+if ( system($iptables_output_insert) != 0 ) {
+    print "Failed to insert an OUTPUT rule in iptables.";
+    die;
+}
+
+my $iptables_mangle = "/sbin/iptables -t mangle -I PREROUTING 1 ";
+$iptables_mangle .= "-s $opt_orig_src_ip -d $opt_clr_tunnel_ip ";
+$iptables_mangle .= "-p $opt_proto -j QUEUE";
+
+if ( system($iptables_mangle) != 0 ) {
+    print "Failed to insert the mangle iptables rule.";
+    die;
+}
+
+$bg_redirect = "./bg_redirector-3110 --clr_tunnel_ip $opt_clr_tunnel_ip";
+$bg_redirect .= " --enc_tunnel_ip $opt_enc_tunnel_ip";
+$bg_redirect .= " --enc_redir_ip $opt_enc_redir_ip";
+$bg_redirect .= " --clr_redir_ip $opt_clr_redir_ip";
+$bg_redirect .= " --target_ip $opt_target_ip";
+$bg_redirect .= " --enc_tunnel_pt $opt_enc_tunnel_pt";
+$bg_redirect .= " --enc_redir_pt $opt_enc_redir_pt";
+$bg_redirect .= " --attack_ip $opt_orig_src_ip";
+$bg_redirect .= " --enc_key $opt_enc_key";
+$bg_redirect .= " --local_ip $opt_local_ip";
+
+if ( defined($opt_redir_to_target_src_pt) ) {
+    $bg_redirect .= " --redir_to_target_src_pt $opt_redir_to_target_src_pt";
+}
+
+if ( defined($opt_redir_to_target_dest_pt) ) {
+    $bg_redirect .= " --redir_to_target_dest_pt $opt_redir_to_target_dest_pt";
+}
+
+if ( defined($opt_tunnel_to_attacker_src_pt) ) {
+    $bg_redirect .=
+      " --tunnel_to_attacker_src_pt $opt_tunnel_to_attacker_src_pt";
+}
+
+if ( defined($opt_tunnel_to_attacker_dest_pt) ) {
+    $bg_redirect .=
+      " --tunnel_to_attacker_dest_pt $opt_tunnel_to_attacker_dest_pt";
+}
+
+if ( defined($opt_logdir) ) {
+    $bg_redirect .= " --logdir $opt_logdir";
+}
+
+print "$bg_redirect\n";
+if ( system("$bg_redirect") != 0 ) {
+    print "bg_redirect has finished.\n";
+}
+
+system(
+"/sbin/iptables -D OUTPUT -s $opt_orig_src_ip -d $opt_clr_tunnel_ip -p $opt_proto -j QUEUE"
+);
+system(
+"/sbin/iptables -t mangle -D PREROUTING -s $opt_orig_src_ip -d $opt_clr_tunnel_ip -p $opt_proto -j QUEUE"
+);
+

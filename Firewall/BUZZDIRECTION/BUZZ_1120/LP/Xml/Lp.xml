@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<module>
+	<name>Lp.mo</name>
+	<iface>0</iface>
+	<defaultDir>/Output/</defaultDir>
+	<function>
+		<name>mods</name>
+		<command>!mods</command>
+		<noargs>true</noargs>
+		<fnum>0.1</fnum>
+		<helpUse>Usage: mods</helpUse>
+		<helpText>The mods command will list all of the currently loaded modules.</helpText>
+	</function>
+	
+	<function>
+		<name>stat</name>
+		<command>!stat</command>
+		<noargs>true</noargs>
+		<fnum>0.2</fnum>
+		<helpUse>Usage: stat</helpUse>
+		<helpText>The stat command will print the status of the Lp's connection to the implant.  It will also print the status of any currently active RPCs.</helpText>
+	</function>
+</module>

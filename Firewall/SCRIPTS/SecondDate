@@ -1,0 +1,54 @@
+## Make sure you brought your inject file to the OP
+## If there is a custom regular expression file, bring that too
+
+
+1. Upload seconddate module (pix631 or higher)
+
+2. Activate module
+
+3. Exit BG
+
+4. Run the secondDate binary
+
+./SecondDateLP 127.0.0.1 [UDP port]
+
+You can use the same UDP tunnel that you had up for BG
+
+5. At the secondDate prompt type: ping
+
+6. If it says OK., Then proceed.  If not try again or maybe remake the tunnels.  If it 
+keeps timing out, wait the entire timeout period before trying again (usually 5 mins)
+
+7. After it says OK, you can type help for a full list of items
+
+8. Making a rule, type rule <enter>
+
+9. Enter a number you want to modify/edit <enter>
+
+10.  Fill in all information that is required
+
+11. If you are injecting, say 'y' to that question
+
+12. For min injection time, put up to 300 seconds (this will all depend on pix load)
+
+13. Max injection, 5 is okay, just whatever the load will be
+
+14. On injection window, if you leave it at 0, it will inject until you shut it down.
+If you set a time, it will inject for that time period and then shutdown.
+
+15. If you need to change TCP flags, you can but defaults are fine.
+
+16. Default on HTTP GET checks are fine.
+
+17. If you have a custom regex, do only 3 filters max.  Load could be overwhelming.
+
+18. Provide the inject file with the tag
+
+19. Do a 'showrule --all' to see if all is what it should be
+
+20. Enable that rule by typing: en 1
+
+If you need to see if the rules are working (after there is time for an inject to happen), you can
+run 'getlog' 
+
+And if you want packetcount, you can type 'getinfo'

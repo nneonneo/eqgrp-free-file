@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<module>
+	<name>Tunnel.mo</name>
+	<iface>34</iface>
+	<function>
+		<name>deleteTunnel</name>
+		<command>!call</command>
+		<fnum>34.1</fnum>
+		<prompt value='34'>ciface</prompt>
+		<prompt value='1'>cprov</prompt>
+		<prompt value='3'>cfunc</prompt>
+		<prompt cprompt='ID of tunnel to delete: '>tunnelid</prompt>
+        <printFunctionOnComplete>listTunnels</printFunctionOnComplete>
+		<helpUse>Usage: deleteTunnel tunnelid &lt;tunnelid&gt;</helpUse>
+		<helpText>The deleteTunnel command is used to delete a tunnel specified by tunnelid.</helpText>
+	</function>
+	
+	<function>
+		<name>outTunnel</name>
+		<curses>true</curses>
+		<command>!call</command>
+		<fnum>34.2</fnum>
+		<prompt value='34'>ciface</prompt>
+		<prompt value='1'>cprov</prompt>
+		<prompt value='5'>cfunc</prompt>
+		<prompt value='2048'>netprot</prompt>
+		<prompt cprompt='Protocol(TCP/UDP)'>transprot</prompt>
+		<prompt cprompt='Dest IP  '>odstip</prompt>
+		<prompt cprompt='Dest Port'>odstport</prompt>
+		<prompt cprompt='New Src IP'>nsrcip</prompt>
+		<prompt cprompt='New Source Port Range'>nsrcportstart</prompt>
+		<prompt cprompt='to'>nsrcportend</prompt>
+		<prompt value='0'>ptype</prompt>
+		<prompt value='0'>pvalue</prompt>
+		<prompt value='2'>etype</prompt>
+		<prompt value='600'>evalue</prompt>
+		<prompt>persist</prompt>
+		<helpUse>Usage: outTunnel [netprot &lt;netprot&gt; transprot &lt;transprot&gt; odstip &lt; odstip&gt; odstport &lt;odstport&gt; nsrcip &lt;nsrcip&gt; nsrcportstart &lt;nsrcportstart&gt; nsrcportend &lt;nsrcprotend&gt; ptype &lt;ptype&gt; pvalue &lt;pvalue&gt; etype &lt;etpye&gt; evalue &lt;evalue&gt; persist &lt;persist&gt;]</helpUse>
+		<helpText>The outTunnel command is used to create a new out tunnel.  Use outTunnel without arguments to enter the necessary information using an interactive form.</helpText>
+	</function>
+
+	<function>
+		<name>redirTunnel</name>
+		<curses>true</curses>
+		<command>!call</command>
+		<fnum>34.3</fnum>
+		<prompt value='34'>ciface</prompt>
+		<prompt value='1'>cprov</prompt>
+		<prompt value='4'>cfunc</prompt>
+		<prompt value='2048'>netprot</prompt>
+		<prompt cprompt='Protocol (TCP/UDP)'>transprot</prompt>
+		<prompt cprompt='Source IP  '>osrcip</prompt>
+		<prompt cprompt='Source Port'>osrcport</prompt>
+		<prompt cprompt='Dest   IP  '>odstip</prompt>
+		<prompt cprompt='Dest   Port'>odstport</prompt>
+		<prompt cprompt='Source IP  '>nsrcip</prompt>
+		<prompt cprompt='Source Port'>nsrcport</prompt>
+		<prompt cprompt='Dest   IP  '>ndstip</prompt>
+		<prompt cprompt='Dest   Port'>ndstport</prompt>
+		<prompt value='0'>ptype</prompt>
+		<prompt value='0'>pvalue</prompt>
+		<prompt>persist</prompt>
+		<helpUse>Usage: redirTunnel [netprot &lt;netprot&gt; transprot &lt;transprot&gt; osrcip &lt;osrcip&gt; osrcport &lt;osrcport&gt; odstip &lt;odstip&gt; odstport &lt;odstport&gt; nsrcip &lt;nsrcip&gt; nsrcport &lt;nsrcprot&gt; ndstip &lt;ndstip&gt; ndstport &lt;ndstport&gt; ptype &lt;ptype&gt; pvalue &lt;pvalue&gt; persist &lt;persist&gt;]</helpUse>
+		<helpText>The redirTunnel command is used to create a new redirect tunnel. Use redirTunnel without arguments to enter the necessary information using an interactive form.</helpText>
+	</function>
+	
+	<function>
+		<name>listTunnels</name>
+		<command>!call</command>
+		<fnum>34.4</fnum>
+		<noargs>1</noargs>
+		<prompt value='34'>ciface</prompt>
+		<prompt value='1'>cprov</prompt>
+		<prompt value='2'>cfunc</prompt>
+		<helpUse>Usage: listTunnels</helpUse>
+		<helpText>The listTunnels command will list all of the current tunnels.</helpText>
+	</function>
+	
+</module>

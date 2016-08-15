@@ -1,0 +1,2 @@
+#!/bin/bash
+killall -q bg_redirector-3110

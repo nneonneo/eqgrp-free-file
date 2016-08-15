@@ -1,0 +1,66 @@
+## Description
+# 1.Allows deduction of enable password from data freely offered by the firewall.
+# 2.Allows privileged level access, knowing only the hash of the enable password.
+# Requires telnet to be enabled on the inside interface and access must be possible 
+# to the inside interface of the firewall (access is subject to the same restrictions 
+# as applied to telnet.)
+
+## Logging
+# Logging levels on the PIX are (most verbose last): 
+# emergency, alert, critical, error, warning, notification, information, debugging.  
+# Connections to port 1467 are logged at 'information' level as follows:
+
+#        "309002: Permitted manager connection from <ip addr>"
+
+# If telnet is not enabled on the inside interface, attempted connections to port 1467 
+# are logged at 'error' level as follows:
+
+#         "307001: Denied Telnet login session from <ip addr> on interface inside"
+
+# The TCP connection to port 1467 MUST be terminated properly according to TCP state 
+# transitions in order to prevent an error being logged at 'alert' level of the form: 
+
+# "214001: Terminating manager session from 192.168.3.3 on interface inside. 
+# Reason: incoming encrypted data (4245094388 bytes) longer than 250 bytes"
+
+# Logging of configuration changes etc made when using the port is made at the usual levels.
+
+## Operational Use
+# Windows Redirection
+background redirect -tcp -lplisten 1467 -target <Pix_ip> 1467 -nodes 40
+
+# Banner port 1467 on the pix. If you get something back you are good to
+# proceed. If not, don't bother trying False.
+
+# Start up a DOS Window on Local Windows Box. Set the buffer to 99999.
+
+# false.exe is in the fw.zip so copy it to your d:\OPSdisk\ directory
+
+# Use the DOS window to communicate with the PIX on port 1467 using FALSE.
+# Use this command to wake up the port if you didn't banner it.
+    d:\OPSdisk\false.exe 127.0.0.1 1467
+# To communicate with PIX on port 1467 using MOREL.
+    d:\OPSdisk\morel.exe -d <delay(ms)> <hash> 127.0.0.1 1467
+# <delay>: the number of milliseconds to wait between sending characters of the command. 500 is good.
+# <hash>: the hash of the enable password
+
+# At the prompt,\n#, run the commands found in sampleman.commands.txt.
+
+# You can type "exit" when you want to log off of morel. If your connection times out
+# enter "m" and then hit return to close the morel connection, then you can
+# reconnect.
+
+# Copy and paste all output to a text file called script.<Pix_ip>.firewall.log, 
+# with the following text at the top of the file:
+
+#hostname: <hostname>
+#domain: <domain name>
+#ip: <Pix_ip>
+#project: <project name>
+
+# At this point you can implant the pix. See pix_create_keyed_IOS_image.txt if
+# you wish to do so.
+
+# When done, put the sampleman log into NOSEND.
+
+

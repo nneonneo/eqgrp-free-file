@@ -1,0 +1,122 @@
+### NOTES:
+# The JIFFYRAUL module in the "active" state is saving session keys in 
+# an array. If the JIFFYRAUL module is placed in a "de-active" state 
+# then the target Pix functions normally and does NOT save session keys.
+
+JIFFYRAUL is a module which is loaded onto a pix with BG 2.1.0.0
+
+
+### Install the JIFFYRAUL module ### 
+
+1. Open a session with the targeted BG modified Pix. Enter menu choice 1 at the LP prompt ("BG#").
+
+2. Get a list of the uploadable modules. Enter menu choice 30.
+
+3. Verify the list contains the "JIFFYRAUL" string. 
+
+4. Upload the module. Enter menu choice 31 and enter the option when asked which module to upload.
+
+5. Activate the module. Enter menu choice 32 and enter "309" when asked for the ID number of the 
+   module to activate.
+
+6. Check to see that the module has been properly uploaded. Enter menu choice 36. It should list 
+   the JIFFYRAUL module.
+
+7. Enter option 37
+
+8. Enter option 10
+
+9. Enter option 1 (Copy and paste this into your notes)
+
+10. Enter option 'e'
+
+11. Enter option 3 (If you need filters skip to FILTERS section)
+
+12. Enter in the number of keys you want to collect (1 key = 64 bytes)
+Keys will continue to collect even if it reaches your number and begin to
+overwrite.
+
+13. Enter option 1 (copy and paste this into your notes, make
+pbc_len_saved_keys_array value changed
+
+
+### COLLECTION ####
+
+1. Enter option 37
+
+2. Enter option 10
+
+3. Enter option 1 (copy and paste your screen into your notes)
+If 'pbc_num_saved_keys' changed, then exit that screen
+
+4. Enter option 'e'
+
+5. Enter option '7' (never use option 2)
+
+6. Enter option 'a' and name the file: <Project>_<pix ip>_<YYYYMMDDHHmm>_All_ipsec_keys
+
+7. Enter option 's' and name the file: <Project>_<pix ip>_<YYYYMMDDHHmm>_special_All_ipsec_keys
+
+8. Select Option e (Return to main menu)
+
+9. Enter option 3
+
+10. Resize the array to whatever it was the previous time (this will clean out
+the current keys)
+
+11. Enter option 8
+
+12. The keys and Global Data you saved to a file are placed in the same directory that you ran 
+    the Mini-program from. You need to move them into the 127.0.0.1 directory so they are kept 
+    with the data from your session. 
+
+13. When you are done with BG, move the 127.0.0.1 directory to /current/down/<pix name>.<pix ip>.
+
+14. chmod -R 777 /current/down/<pix name>.<pix ip>.
+
+
+### Uninstalling the JIFFYRAUL module ###
+### Before you uninstall the JIFFYRAUL module, collect all data 
+
+1. Enter option 1 at the BG prompt to open a session with the targeted BG modified Pix.
+
+2. Enter option 36. Get a list of the uploaded modules.
+
+3. Verify the list contains the JIFFYRAUL string.
+
+4. Enter option 33 and enter "309" when asked for the ID number of the module to de-activate.
+
+5. Enter menu choice 36. Check to see that the module has been properly removed. 
+
+6. Enter menu choice 9. Close the session with the targeted BG modified Pix.
+
+7. Enter menu choice 0. Quit the session with the targeted BG modified Pix.
+
+
+### FILTERS ###
+# Make sure that the filters you set up are actually part of the PIX config or
+# else you are wasting your time
+
+1. Once on JIFFY main menu
+
+2. Enter option 6
+
+3. Enter option 1
+
+4. Now it is asking for the first rule you want to start, enter rule ID '0' if
+   there are no rules currently. hit enter
+
+5. Then enter the Host IP (host meaning the IP of the interface of the pix
+   carrying the traffic). hit enter
+
+6. Then enter the netmask. hit enter
+
+7. Then enter the peer IP (Box traffic is going to). hit enter
+
+8. Then enter the netmask. hit enter
+
+9. If you rule is correct hit enter.
+
+10. Now activate your rule. Enter option 3 from the IP filters menu
+
+11. Then enter in your rule ID number you assigned it

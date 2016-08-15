@@ -1,0 +1,278 @@
+# -*- coding: utf-8 -*-
+
+"""
+requests.session
+~~~~~~~~~~~~~~~~
+
+This module provides a Session object to manage and persist settings across
+requests (cookies, auth, proxies).
+
+"""
+
+from .defaults import defaults
+from .models import Request
+from .hooks import dispatch_hook
+from .utils import header_expand
+from .packages.urllib3.poolmanager import PoolManager
+
+
+def merge_kwargs(local_kwarg, default_kwarg):
+    ''''''
+
+
+    if default_kwarg is None:
+        return local_kwarg
+
+    if isinstance(local_kwarg, str):
+        return local_kwarg
+
+    if local_kwarg is None:
+        return default_kwarg
+
+    ##
+
+    if not hasattr(default_kwarg, 'items'):
+        return local_kwarg
+
+    ##
+
+    kwargs = default_kwarg.copy()
+    kwargs.update(local_kwarg)
+
+    ##
+
+    for (k, v) in list(local_kwarg.items()):
+        if v is None:
+            del kwargs[k]
+
+    return kwargs
+
+
+class Session(object):
+    ''''''
+
+
+    __attrs__ = [
+        'headers', 'cookies', 'auth', 'timeout', 'proxies', 'hooks',
+        'params', 'config', 'verify', 'cert']
+
+
+    def __init__(self,
+        headers=None,
+        cookies=None,
+        auth=None,
+        timeout=None,
+        proxies=None,
+        hooks=None,
+        params=None,
+        config=None,
+        prefetch=False,
+        verify=True,
+        cert=None):
+
+        self.headers = headers or {}
+        self.cookies = cookies or {}
+        self.auth = auth
+        self.timeout = timeout
+        self.proxies = proxies or {}
+        self.hooks = hooks or {}
+        self.params = params or {}
+        self.config = config or {}
+        self.prefetch = prefetch
+        self.verify = verify
+        self.cert = cert
+        for (k, v) in list(defaults.items()):
+            self.config.setdefault(k, v)
+
+        self.init_poolmanager()
+
+        ##
+
+        self.cookies = {}
+
+        ##
+
+        if cookies is not None:
+            self.cookies.update(cookies)
+
+    def init_poolmanager(self):
+        self.poolmanager = PoolManager(
+            num_pools=self.config.get('pool_connections'),
+            maxsize=self.config.get('pool_maxsize')
+        )
+
+    def __repr__(self):
+        return '<requests-client at 0x%x>' % (id(self))
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        pass
+
+    def request(self, method, url,
+        params=None,
+        data=None,
+        headers=None,
+        cookies=None,
+        files=None,
+        auth=None,
+        timeout=None,
+        allow_redirects=True,
+        proxies=None,
+        hooks=None,
+        return_response=True,
+        config=None,
+        prefetch=False,
+        verify=None,
+        cert=None):
+
+        ''''''
+
+
+        method = str(method).upper()
+
+        ##
+
+        cookies = {} if cookies is None else cookies
+        data = {} if data is None else data
+        files = {} if files is None else files
+        headers = {} if headers is None else headers
+        params = {} if params is None else params
+        hooks = {} if hooks is None else hooks
+        prefetch = self.prefetch or prefetch
+
+        ##
+
+        for key, cb in list(self.hooks.items()):
+            hooks.setdefault(key, cb)
+
+        ##
+
+        if headers:
+            for k, v in list(headers.items()) or {}:
+                headers[k] = header_expand(v)
+
+        args = dict(
+            method=method,
+            url=url,
+            data=data,
+            params=params,
+            headers=headers,
+            cookies=cookies,
+            files=files,
+            auth=auth,
+            hooks=hooks,
+            timeout=timeout,
+            allow_redirects=allow_redirects,
+            proxies=proxies,
+            config=config,
+            verify=verify,
+            cert=cert,
+            _poolmanager=self.poolmanager
+        )
+
+        ##
+
+        for attr in self.__attrs__:
+            session_val = getattr(self, attr, None)
+            local_val = args.get(attr)
+
+            args[attr] = merge_kwargs(local_val, session_val)
+
+        ##
+
+        args = dispatch_hook('args', args['hooks'], args)
+
+        ##
+
+        r = Request(**args)
+
+        ##
+
+        r.session = self
+
+        ##
+
+        if not return_response:
+            return r
+
+        ##
+
+        r.send(prefetch=prefetch)
+
+        ##
+
+        self.cookies.update(r.response.cookies)
+
+        ##
+
+        return r.response
+
+
+    def get(self, url, **kwargs):
+        ''''''
+
+
+        kwargs.setdefault('allow_redirects', True)
+        return self.request('get', url, **kwargs)
+
+
+    def options(self, url, **kwargs):
+        ''''''
+
+
+        kwargs.setdefault('allow_redirects', True)
+        return self.request('options', url, **kwargs)
+
+
+    def head(self, url, **kwargs):
+        ''''''
+
+
+        kwargs.setdefault('allow_redirects', False)
+        return self.request('head', url, **kwargs)
+
+
+    def post(self, url, data=None, **kwargs):
+        ''''''
+
+
+        return self.request('post', url, data=data, **kwargs)
+
+
+    def put(self, url, data=None, **kwargs):
+        ''''''
+
+
+        return self.request('put', url, data=data, **kwargs)
+
+
+    def patch(self, url, data=None, **kwargs):
+        ''''''
+
+
+        return self.request('patch', url,  data=data, **kwargs)
+
+
+    def delete(self, url, **kwargs):
+        ''''''
+
+
+        return self.request('delete', url, **kwargs)
+
+    def __getstate__(self):
+        return dict((attr, getattr(self, attr, None)) for attr in self.__attrs__)
+
+    def __setstate__(self, state):
+        for attr, value in state.items():
+            setattr(self, attr, value)
+
+        self.init_poolmanager()
+
+
+def session(**kwargs):
+    ''''''
+
+
+    return Session(**kwargs)

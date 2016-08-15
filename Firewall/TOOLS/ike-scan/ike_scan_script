@@ -1,0 +1,24 @@
+####Using IKE scanner####
+
+##After unzipping your fw.zip file.  Go to the FW/Tools directory
+
+cd /current/bin/FW/Tools
+
+##Make sure ike-scan.rh9 binary and the vender ID file exists
+
+ls -l /current/bin/FW/Tools/ike-scan
+
+##Script your window with "myenv"
+
+##To perform the scan with redirection, set up your tunnels
+
+-tunnel
+u 555 <TARGET_FIREWALL> 500 500
+
+##Execute the ike-scanner
+
+./ike-scan -N -d 555 127.0.0.1
+
+##You should get a Key or ID back from the firewall to help you
+##identify the IOS and hardware running
+

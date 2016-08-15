@@ -1,0 +1,7 @@
+# files to get from a fortigate via BUZZ
+/proc/net/arp
+/proc/uptime
+/proc/version
+/data/config/*
+/data2/alert_msg
+

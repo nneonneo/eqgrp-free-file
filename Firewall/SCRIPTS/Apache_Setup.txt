@@ -1,0 +1,67 @@
+# Before you even get to the op, you need to create a PIX/ASA IOS image,
+# key it, and test it. Bring the image and the key to the op. Always run a 
+# Full sampleman before coping up an image to target
+
+########## How to get Apache installed on the ops station ##########
+#
+# cd to the Apache tools directory
+cd /current/bin/FW/TOOLS/Apache
+
+# Run this first to get the RPM to install without issue
+rpm -e httpd httpd-suexec mod_ssl apr-util
+
+# Run this next to load apache rpm's
+rpm -hiv *.rpm
+
+# In this directory is modified versions of the config files
+
+cp httpd.conf /etc/httpd/conf/httpd.conf 
+cp ssl.conf /etc/httpd/conf.d/ssl.conf
+
+# Create a test html file
+echo "<html><body>This is a test</body></html>" > /var/www/html/index.html
+
+# Put the image file you want to up/download into this directory with a
+# common name:
+cp /mnt/zip/<project>.<ip>_bg2200_pix633.bin /var/www/html/pix633.bin
+
+# Set permissions for items in html directory
+chmod 744 /var/www/html/*
+
+# Start up the apache server
+service httpd start
+
+# Start up your browser to verify it works.
+# You should get a pop-up asking to verify the ssl cert.
+# Then you'll get the index.html page which will say "This is a test".
+firefox https://127.0.0.1:4443 &
+
+# Setup a remote listener on 443 on redirector to hit apache on 4443
+-tunnel
+r 443 127.0.0.1 4443
+
+# Now you are ready to go to the target pix and run this command
+copy https://<ip of redirector>:<port if !443>/<name of image file> flash
+
+# Log off of the pix
+exit
+
+######## Getting Ops Station Back to normal ########
+#
+# Once the upload is done, stop apache
+service httpd stop
+
+# Remove installed rpm's
+rpm -e httpd httpd-suexec mod_ssl apr-util
+
+# Then you need to remove any directories still remaining.
+rm -rf /var/log/httpd /etc/httpd /var/www
+
+#### OTHER INFO ####
+# To install apache, you need 3 rpm's:
+# httpd-2.0.52-19.ent.i386.rpm
+# httpd-suexec-2.0.52-19.ent.i386.rpm
+# mod_ssl-2.0.52-19.ent.i386.rpm
+# apr-util-0.9.4-17.i386.rpm
+
+

@@ -1,0 +1,165 @@
+### FW uptime ###
+
+select option 41) read a file from the network
+
+Enter the following:
+/proc/uptime  
+		NOTE: 	First number:  number of seconds since the box was booted
+			Second number: number of seconds the box was idle.
+
+
+enter the name of the file you wish to save the data as
+
+
+### pulling running-config ###
+
+select option 41) read a file from the network
+
+Enter the following:
+/proc/net/firewall/config
+
+Enter the name of the file you wish to save the data as
+
+
+
+### pulling starting-config ###
+
+select option 41) read a file from the network
+
+Enter the following:
+/fw-2.0/xxxxx.1
+
+Enter the name of the file you wish to save the data as
+
+
+
+### arp-table info ###
+
+select option 41) read a file from the network
+
+Enter the following:
+/proc/net/arp
+
+Enter the name of the file you wish to save the data as
+
+
+
+
+### network profiler ###
+
+verify the following modules are locted in the /current/bin/FW/BLATSTING_16120/LP directory: bp_bpf.o and bp_networkProfiler.o
+
+select option 31) to upload the bp_bpf.o module and enter "0" for non-persistent mode
+	NOTE: No need to activate the modules because they are automatically activated once loaded.
+	
+select option 31) to upload the bp_networkProfiler.o module and enter "0" for non-persistent mode
+	
+select option 36) to verify the two modules are running and not persistent
+
+select option 131) configure and start profiling
+
+enter "-h" to display a list of networkProfiler options.  Next, enter "-s ?" to display a list of various scantype options
+
+-----------------------------------------
+    
+Please enter your networkProfiler command line (-h for help, CTRL-n to cancel)? -h
+  -S/--scantype <scan name>   name of predefined scan (enter ? to be provided with a list)
+  -i/--interface <interface index (as from interface listing)>  limit to the specified interface
+  -P/--prefilter netmask <netmask length>  netmask length for prefilter (0-32, default 0)
+  -p/--prefilter <pcap filter string>  pcap pre-filter definition (enclose this in double quotes)
+  -s/--duration_seconds <seconds>  test duration in seconds
+  -m/--duration_minutes <minutes>  test duration in minutes
+  -r/--duration_hours <hours> test duration in hours
+  -y/--duration_days <days>   test duration in days
+  -N/--nperiods <# of scan periods>  number of periods to scan (default: 1)
+  -n/--maxNRecords <# of records>  total number of records to keep
+  --hashTableSize <# of entries>  size of the hash table
+  -h/--help                   print this usage message
+Please enter your networkProfiler command line (-h for help, CTRL-n to cancel)? -S ?
+    MAC2MAC               Ethernet (MAC) src/dst address collection
+    srcIP                 source IP address collection
+    srcMACIP              source Ethernet (MAC) and source IP address collection
+    TCPUDP_bytes          IPv4 TCP/UDP full connection information with byte count (IPs, IP protocol, ports, ttl, byte count)
+    TCPSYN_condense       IPv4 TCP/UDP condensed connection information with SYN count (IPs, IP protocol, condensed ports, ttl, SYN count)
+    TCPSYN_condense_bytes  IPv4 TCP/UDP condensed connection information with SYN and total byte count (IPs, IP protocol, condensed ports, ttl, SYN count)
+    IP2IP_bytes           source, destination IP collection with total byte count
+    TCPUDP_condense       IPv4 TCP/UDP condensed connection information (IPs, IP protocol, condensed ports, ttl)
+    TCPSYN                IPv4 TCP/UDP connection information with SYN count (IPs, IP protocol, ports, ttl, SYN count)
+    TCPUDP_condense_bytes  IPv4 TCP/UDP condensed connection information with total byte count (IPs, IP protocol, condensed ports, ttl, byte count)
+    IP2IP                 IPv4 IP-to-IP address collection (who is calling who?)
+    TCPUDP                IPv4 TCP/UDP full connection information (IPs, IP protocol, ports, ttl)
+
+---------------------------------------------
+Examples:  
+
+1)Enter the following to configure networkProfiler to survey for a 10 minute session and capture 200 records:
+	1a) -S TCPUDP_condense -m 10 -n 200 
+	1b) verify the approximate run-time memory usage is below 32KB before excepting desired configuration
+
+
+2)Enter the following to configure networkProfiler to survey the 192.168.0.0 network for 12 one-hour sessions and capture 100 records:
+	2a) -S TCPUDP -r 1 -N 12 -n 100 -P 16 -p "src net 192.168.0.0/16"
+	2b) verify the approximate run-time memory usage is below 32KB before excepting desired configuration
+
+
+Viewing survey results:
+
+select option 132) to display the data to the screen
+
+or
+
+select option 133) to display the data to the screen as well as dump to a file
+
+
+
+### creating tunnels ###
+
+verify the following modules are locted in the /current/bin/FW/BLATSTING_16120/LP directory: bp_tunnel.o
+
+select option 31) to upload the bp_tunnel.o module and enter "0" for non-persistent mode
+	NOTE: No need to activate the modules because they are automatically activated once loaded.
+	
+	
+select option 36) to verify the module is running and not persistent
+
+select  option 53) to create a tunnel using the command line. (can specify up to four src/dst ports)
+
+Examples:
+(pitch) ------> (external int) FW (internal int)-------> (target)
+
+pitch - outside source - 191.64.0.18
+external int - outside destination - 204.99.63.157
+internal int - inside source - 192.168.0.1
+target - inside destination - 192.168.2.182
+
+
+1) Enter the following to conduct scans from the pitch via the firewall...2-way tunnel:
+
+-S 191.64.000.018/32 -D 204.099.063.157/32 -s 192.168.000.001/32 -d 192.168.002.182/32 --outsidedstport0 21737 --insidedstport0 137 --outsidedstport1 21586 --insidedstport1 445 --outsidedstport2 21390 --insidedstport2 139 --outsidedstport3 21690 --insidedstport3 111 --hopcount 1 --priority 83
+
+
+
+
+### removing tunnels ###
+
+select option 51) to remove a tunnel from the target
+
+enter id of tunnel to remove. Enter "-1" to display a list of id's for each configured tunnel.
+
+
+
+
+### removing modules ###
+
+select option 36) to get a list of uploaded module ID's.  The module ID consists of the following: Module Type, Intra Module Type and Version number.   
+
+
+select option 34)  to remove a module (no need to deactivate first). This option will you prompt for the following: 
+Enter the Module Type: 
+9
+Enter the Intra Module Type: 
+0
+Enter the Version number: 
+1
+
+
