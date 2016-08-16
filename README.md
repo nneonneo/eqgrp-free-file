@@ -2,7 +2,7 @@
 
 This repository contains the decrypted and decompressed contents of the `eqgrp-free-file.tar.xz` file released by "The Shadow Brokers". The contents are supposedly a free sample of the files exfiltrated from the [Equation Group](https://en.wikipedia.org/wiki/Equation_Group), a notorious, highly-sophisticated cyber attack group.
 
-The Shadow Brokers have opened an auction to sell off the remaining files, although the legitimacy of the auction is widely disputed. See the original auction announcement here: https://theshadowbrokers.tumblr.com/post/148871184165/equation-group-cyber-weapons-auction
+The Shadow Brokers have opened an auction to sell off the remaining files, although the legitimacy of the auction is widely disputed. See the original auction announcement here: [https://theshadowbrokers.tumblr.com/post/148872852770/equation-group-cyber-weapons-auction-invitation](https://web.archive.org/web/20160815190830/https://theshadowbrokers.tumblr.com/post/148872852770/equation-group-cyber-weapons-auction-invitation)
 
 Only files in the [`Firewall`](Firewall) directory are from the archive. [`listing.txt`](listing.txt) shows a list of all the files in the original archive, along with their file date and timestamps.
 
